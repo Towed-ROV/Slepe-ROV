@@ -1,10 +1,6 @@
 from video_camera import VideoCamera
 from threading import Thread
 from util import process_frame
-import time
-import pickle
-import struct
-import cv2
 
 
 class VideoClientHandler(Thread):
