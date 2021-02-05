@@ -1,10 +1,8 @@
 import cameraStream
 import threading
 import Data
-import SerialHandler
-import SerialReader
-import MessageDispatcher
-import Subscriber
+from serial_handler import SerialHandler
+from collections import deque
 class Main:
     def __init__(self):
         self.udpIp = '192.168.0.120'
@@ -12,7 +10,7 @@ class Main:
 
         self.data = Data.data()
     def run(self):
-        self.serial_data_handler = SerialHandler.SerialDataHandler
+        self.serial_data_handler = SerialHandler
         self.thread_com_ports(self.serial_data_handler)
         cam = cameraStream.UdpClient(self.udpIp, self.udpPort, self.data)
         t1 = threading.Thread(cam.videoStream())
@@ -29,9 +27,9 @@ class Main:
 
                 imuThread = threading.Thread(SerialReader.ReadSerialData(self.data, 1, 9200, 'imu').run())
                 imuThread.start()
-            if "stepperArduino" in value>
-                stepperReadThread = threading.Thread(SerialReader.ReadSerialData(self.data, 1, 9200, 'imu').run())
-                stepperReadThread.start()
+            if "stepperArduino" in value:
+                stepper_read_thread = threading.Thread(SerialReader.ReadSerialData(self.data, 1, 9200, 'imu').run())
+                stepper_read_thread.start()
 
     def send_sensor_data(self):
         self.publisher.publish(self.data.getAllSensorData())

@@ -2,18 +2,20 @@ import serial
 import time
 from threading import Thread
 class SerialReader(Thread):
-    def __init__(self, com_port, baud_rate):
+    def __init__(self, queue, com_port, baud_rate):
         Thread.__init__(self)
+        self.queue = queue
         self.com_port = com_port
         self.baud_rate = baud_rate
         self.serial_port = serial.serial(self.com_port, self.baud_rate, timeout=0)
-
+        self.message_received = ""
     def run(self):
         while True:
             try:
-                self.read_incomming_data()
+                self.queue.put(self.read_incomming_data())
             except (Exception)as e:
                 print(e)
+
 
     def read_incomming_data(self):
         start_char = '<'
@@ -34,6 +36,8 @@ class SerialReader(Thread):
                 message_received = message_received.decode().strip(start_char).strip(end_char).split(seperation_char)
                 break
         return message_received
+
+
 
 
 
