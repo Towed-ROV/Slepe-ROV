@@ -37,7 +37,7 @@ class VideoCamera():
         """
         _, frame = self.cap.read()
         return frame
-    
+
     @staticmethod
     def get_frame_bytes(self):
         """ converts a numpy.ndarray into bytes
@@ -47,9 +47,8 @@ class VideoCamera():
             [bytes]: [output buffer]
         """
         frame = self.get_frame()
-        _, frame_buffer = cv2.imencode('.JPEG', frame) # self.encoder_quality
+        _, frame_buffer = cv2.imencode('.JPEG', frame)  # self.encoder_quality
         return frame_buffer.tobytes()
-
 
 
 if __name__ == "__main__":
