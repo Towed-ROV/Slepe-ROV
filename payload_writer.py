@@ -6,8 +6,9 @@ class PayloadWriter(Thread):
     def __init__(self, sensor_list):
         Thread.__init__(self)
         self.sensor_list = sensor_list
-        self.message_dispatcher = MessageDispatcher()
         self.message_queue = deque()
+        self.message_dispatcher = MessageDispatcher(self.message_queue)
+
 
     def run(self):
         while True:

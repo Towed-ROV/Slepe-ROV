@@ -4,14 +4,14 @@ from threading import Thread
 
 class MessageDispatcher(Thread):
     def __init__(self, data_queue):
-        Thread.__init__()
+        Thread.__init__(self)
         self.ip = "tcp://192.168.0.20:1337"
         context = zmq.Context()
         self.socket = context.socket(zmq.PUB)
-        self.socket.bind(self.ip)
         self.data_queue = data_queue
 
     def run(self):
+#todo is socket connetec?
         while True:
             try:
                 self.publish()
@@ -19,7 +19,8 @@ class MessageDispatcher(Thread):
                 print(e)
 
     def publish(self):
-        self.socket.send_json(json.dumps(self.data_queue.popleft()))
+        pass
+        #self.socket.send_json(json.dumps(self.data_queue.popleft()))
 
     def disconnect(self):
         self.socket.disconnect()
