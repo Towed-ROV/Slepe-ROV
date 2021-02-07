@@ -33,7 +33,7 @@ class SerialFinder:
 
                         print(message_received)
                         if message_received:
-                            message_received = message_received.strip().decode('ascii').split(self.seperation_char)
+                            message_received = message_received.strip().decode('uft-8').split(self.seperation_char)
                             port_name = message_received[0].replace('<', '')
 
                         if "IMU" in port_name:
@@ -49,11 +49,11 @@ class SerialFinder:
                             print('Found StepperArduino')
                         serial_port.close()
                     except (Exception) as e:
-                        print(e)
+                        print(e, "serial finder")
                         try:
                             serial_port.close()
                         except (Exception) as e:
-                            print(e)
+                            print(e, "serial finder")
             search_runs = search_runs + 1
         return self.port_name_list
 
@@ -65,7 +65,7 @@ class SerialFinder:
         while i < 3:
             for port in port_exceptions:
                 if port in ports:
-                    print(port)
+                    print("seff")
                     ports.remove(port)
             for port in ports:
                 try:

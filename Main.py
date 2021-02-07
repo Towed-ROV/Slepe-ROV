@@ -1,8 +1,9 @@
 import cameraStream
 import threading
 import Data
-from serial_handler import SerialHandler
-from collections import deque
+from Program.Serial_communication.serial_handler import SerialHandler
+
+
 class Main:
     def __init__(self):
         self.udpIp = '192.168.0.120'

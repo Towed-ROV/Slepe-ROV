@@ -17,7 +17,7 @@ class SerialWriter(Thread):
             try:
                 self.__write_serial_data(self.queue.popleft())
             except (Exception) as e:
-                print(e)
+                print(e, "serial writer")
 
     def __write_serial_data(self):
         if self.serial_port.isOpen():
@@ -32,7 +32,7 @@ class SerialWriter(Thread):
                     self.last_output = output
                     self.serial_port.close()
                 except (Exception) as e:
-                    print(e)
+                    print(e, "serial writer")
         else:
             self.serial_port.open()
             print('Serial port not open : ' + str(self.com_port))

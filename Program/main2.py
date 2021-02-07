@@ -1,10 +1,10 @@
-from payload_writer import PayloadWriter
-from payload_handler import PayloadHandler
-from serial_handler import SerialHandler
+from payloads.payload_writer import PayloadWriter
+from payloads.payload_handler import PayloadHandler
+from Serial_communication.serial_handler import SerialHandler
 from collections import deque
 
 command_queue = deque()
-sensor_list = []
+sensor_list = {}
 message_queue = deque()
 
 #starting threads
@@ -20,5 +20,5 @@ serial_handler = SerialHandler(command_queue, sensor_list)
 serial_handler.daemon = True
 serial_handler.start()
 
-
-
+while True:
+    pass

@@ -14,7 +14,7 @@ class SerialReader(Thread):
             try:
                 self.queue.put(self.read_incomming_data())
             except (Exception)as e:
-                print(e)
+                print(e, "serialr reader")
 
 
     def read_incomming_data(self):
@@ -27,7 +27,7 @@ class SerialReader(Thread):
             try:
                 self.serial_port.open()
             except(Exception) as e:
-                print(e)
+                print(e, "serial reader")
         while True:
             time.sleep(0.05)
             message_received = self.serial_port.readline()

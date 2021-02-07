@@ -16,7 +16,7 @@ class MessageDispatcher(Thread):
             try:
                 self.publish()
             except (Exception) as e:
-                print(e)
+                print(e, "message dispatcher")
 
     def publish(self):
         pass

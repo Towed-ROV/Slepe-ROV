@@ -1,5 +1,5 @@
 import json
-from message_dispatcher import MessageDispatcher
+from send_and_receive.message_dispatcher import MessageDispatcher
 from threading import Thread
 from collections import deque
 class PayloadWriter(Thread):
@@ -15,14 +15,13 @@ class PayloadWriter(Thread):
             try:
                 self.__merge_sensor_payload()
             except (Exception) as e:
-                print(e)
+                print(e,"payload writer")
 
     def merge_command_payload(self, command):
         command_structure = {
             "payload_name": "command",
             "payload_data": [command]
         }
-        self.__send_payload(command_structure)
 
     def __merge_sensor_payload(self):
         sensors = []

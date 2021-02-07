@@ -1,6 +1,6 @@
-from serial_writer import SerialWriter
-from serial_reader import SerialReader
-from serial_finder import SerialFinder
+from Serial_communication.serial_writer import SerialWriter
+from Serial_communication.serial_reader import SerialReader
+from Serial_communication.serial_finder import SerialFinder
 from sensor import Sensor
 from collections import deque
 from threading import Thread
@@ -26,47 +26,44 @@ class SerialHandler(Thread):
             self.__put_in_writer_queue()
 
     def __find_com_ports(self):
+        com_port_found = False
         com_ports_list = self.find_com_ports()
         for com_port, port_name in com_ports_list:
             if "IMU" in port_name:
                 self.imu_serial_writer = self.__open_writer_thread(self.writer_queue_IMU, com_port, 4800)
                 self.imu_serial_reader = self.open_reader_thread(self.reader_queue, com_port, 4800)
                 self.writer_queue_IMU.append("IMU:OK")
+                com_port_found = True
             if "SensorArduino" in port_name:
                 self.sensor_arduino_serial_writer = self.__open_writer_thread(self.writer_queue_sensor_arudino,
                                                                               com_port, 4800)
                 self.sensor_arduino_serial_reader = self.open_reader_thread(self.reader_queue, com_port, 4800)
                 self.writer_queue_sensor_arudino.append("sensor_arduino:OK")
+                com_port_found = True
             if "StepperArduino" in port_name:
                 self.stepper_arduino_serial_writer = self.__open_writer_thread(self.writer_queue_stepper_arduino,
                                                                                com_port, 4800)
                 self.stepper_arduino_serial_reader = self.open_reader_thread(self.reader_queue, com_port, 4800)
                 self.writer_queue_stepper_arduino.append("stepper_arduino:OK")
-        return True
+                com_port_found = True
+        return com_port_found
 
     def __write_incomming_messages(self):
-        self.imu_serial_writer.put_in_queue(self.writer_queue_IMU)
+        self.imu_serial_writer.queue.put_in_queue(self.writer_queue_IMU)
         self.sensor_arduino_serial_writer.put_in_queue(self.writer_queue_sensor_arudino)
         self.stepper_arduino_serial_writer.put_in_queue(self.writer_queue_stepper_arduino)
 
     def __get_incomming_messages(self):
         try:
-            self.message_queue.append(self.imu_serial_reader.queue.get_nowait())
+            self.message_queue.append(self.reader_queue.popleft())
         except IndexError:
             pass
-        try:
-            self.message_queue.append(self.sensor_arduino_serial_reader.queue.get_nowait())
-        except IndexError:
-            pass
-        try:
-            self.message_queue.append(self.stepper_arduino_serial_reader.queue.get_nowait())
-        except IndexError:
-            pass
+
     def set_queue(self, queue):
         self.writer_queue = queue
 
     def find_com_ports(self):
-        serial_finder = SerialFinder
+        serial_finder = SerialFinder()
         return serial_finder.find_com_ports()
 
     def open_reader_thread(self, queue, com_port, baud_rate):
