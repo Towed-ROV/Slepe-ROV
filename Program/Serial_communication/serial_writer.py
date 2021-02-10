@@ -7,22 +7,22 @@ class SerialWriter(Thread):
         self.queue = queue
         self.com_port = com_port
         self.baud_rate = baud_rate
-        self.serial_port = serial.Serial(self.com_port, self.baud_rate, timeout=0)
+        self.serial_port = serial.Serial(self.com_port, self.baud_rate, timeout=0,
+                                         stopbits=1, bytesize=8)
         self.last_output = ""
-        self.message_to_send = ""
 
     def run(self):
-        self.serial_port.open()
         while True:
             try:
                 self.__write_serial_data(self.queue.popleft())
+                print(self.last_output)
             except (Exception) as e:
-                print(e, "serial writer")
+                pass
 
-    def __write_serial_data(self):
+    def __write_serial_data(self, message):
         if self.serial_port.isOpen():
-            output = "<" + self.message_to_send + ">"
-
+            output = "<" + message + ">"
+            print(message)
             if output != "self.last_output":
 
                 try:

@@ -1,4 +1,5 @@
 import json
+import time
 from send_and_receive.message_dispatcher import MessageDispatcher
 from threading import Thread
 from collections import deque
@@ -8,9 +9,12 @@ class PayloadWriter(Thread):
         self.sensor_list = sensor_list
         self.message_queue = deque()
         self.message_dispatcher = MessageDispatcher(self.message_queue)
+        self.message_dispatcher.daemon = True
+        self.message_dispatcher.start()
 
 
     def run(self):
+        time.sleep(10)
         while True:
             try:
                 self.__merge_sensor_payload()
@@ -26,13 +30,22 @@ class PayloadWriter(Thread):
     def __merge_sensor_payload(self):
         sensors = []
         json_sensor = ''
-        for sensor_name, sensor_value in self.sensor_list.items():
-            sensors.append(sensor_value)
-            json_sensor = json.dumps(sensors)
+        
+#         for sensor_name, sensor_value in self.sensor_list.items():
+            
+#             sensors.append('%s:%s'%sensor_name, sensor_value)
+        json_sensor = json.dumps(self.sensor_list)
+        print(self.sensor_list)
+        time.sleep(0.05)
         sensor_structure = {
             "payload_name": "sensor_data",
-            "payload_data": [json_sensor]
+            "payload_data": json_sensor
         }
+        
+#         print('-----------')
+#         print(sensor_structure)
+#         print('-----------')
+
         self.message_queue.append(sensor_structure)
 
 if __name__ == "__main__":

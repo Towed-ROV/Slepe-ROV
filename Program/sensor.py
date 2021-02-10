@@ -1,7 +1,7 @@
 class Sensor:
-    def __init__(self, name):
+    def __init__(self, name, value):
         self.name = name
-        self.value = 0
+        self.value = value
 
     def set_sensor_value(self, value):
         self.value = value

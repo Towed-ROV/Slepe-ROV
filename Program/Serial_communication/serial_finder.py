@@ -25,28 +25,31 @@ class SerialFinder:
 
             for key in port_names:
                 if 'dev' in key:
-                    serial_port = serial.Serial(key, self.baud_rate, timeout=0)
-                    print(key)
+                    serial_port = serial.Serial(key, self.baud_rate, timeout=0,
+                                                stopbits=1, bytesize=8)
                     try:
-                        time.sleep(0.6)
+                        time.sleep(2)
+                        print("test1")
                         message_received = serial_port.readline()
-
                         print(message_received)
                         if message_received:
-                            message_received = message_received.strip().decode('uft-8').split(self.seperation_char)
+                            
+                            print("test3")
+                            message_received = message_received.strip().decode().split(self.seperation_char)
+                            print("tere")
                             port_name = message_received[0].replace('<', '')
 
-                        if "IMU" in port_name:
-                            self.port_name_list[key] = "IMU"
-                            print('Found IMU')
+                            if "IMU" in port_name:
+                                self.port_name_list[key] = "IMU"
+                                print('Found IMU')
 
-                        elif "SensorArduino" in port_name:
-                            self.port_name_list[key] = "SensorArduino"
-                            print('Found SensorArduino')
+                            elif "sensorArduino" in port_name:
+                                self.port_name_list[key] = "SensorArduino"
+                                print('Found SensorArduino')
 
-                        elif "StepperArduino" in port_name:
-                            self.port_name_list[key] = "StepperArduino"
-                            print('Found StepperArduino')
+                            elif "stepperArduino" in port_name:
+                                self.port_name_list[key] = "StepperArduino"
+                                print('Found StepperArduino')
                         serial_port.close()
                     except (Exception) as e:
                         print(e, "serial finder")
@@ -55,6 +58,7 @@ class SerialFinder:
                         except (Exception) as e:
                             print(e, "serial finder")
             search_runs = search_runs + 1
+        print("done")
         return self.port_name_list
 
     def get_available_com_ports(self):

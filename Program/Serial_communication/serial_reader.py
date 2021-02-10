@@ -7,13 +7,14 @@ class SerialReader(Thread):
         self.queue = queue
         self.com_port = com_port
         self.baud_rate = baud_rate
-        self.serial_port = serial.serial(self.com_port, self.baud_rate, timeout=0)
+        self.serial_port = serial.Serial(self.com_port, self.baud_rate, timeout=0)
         self.message_received = ""
     def run(self):
         while True:
             try:
-                self.queue.put(self.read_incomming_data())
+                self.queue.append(self.read_incomming_data())
             except (Exception)as e:
+                pass
                 print(e, "serialr reader")
 
 

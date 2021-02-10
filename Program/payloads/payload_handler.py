@@ -7,6 +7,8 @@ class PayloadHandler(Thread):
         self.received_data = ""
         self.message_queue = deque()
         self.message_receiver = MessageReceiver(self.message_queue)
+        self.message_receiver.daemon = True
+        self.message_receiver.start()
         self.command_queue = command_queue
 
     def run(self):
@@ -19,10 +21,9 @@ class PayloadHandler(Thread):
     def __handle_payload(self):
         try:
             data_type, data = self.__payload_reader(self.message_queue.popleft())
+           
             if data_type == 'commands':
-                for commands in data:
-                    command_name = commands['command_name']
-                    command_data = commands['command_value']
+                for command_name, command_data in data[0].items():                    
                     if command_name == 'reset':
                         self.command_queue.append("reset:" + command_data['reset'])
                     if command_name == 'light_on_off':

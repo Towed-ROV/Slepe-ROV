@@ -16,7 +16,7 @@ payload_writer = PayloadWriter(sensor_list)
 payload_writer.daemon = True
 payload_writer.start()
 
-serial_handler = SerialHandler(message_queue, sensor_list, command_queue)
+serial_handler = SerialHandler(sensor_list, command_queue)
 serial_handler.daemon = True
 serial_handler.start()
 
