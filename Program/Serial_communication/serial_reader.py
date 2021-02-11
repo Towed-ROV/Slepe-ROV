@@ -15,7 +15,7 @@ class SerialReader(Thread):
                 self.queue.append(self.read_incomming_data())
             except (Exception)as e:
                 pass
-                print(e, "serialr reader")
+                print(e, "serial reader")
 
 
     def read_incomming_data(self):

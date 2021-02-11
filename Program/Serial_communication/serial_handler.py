@@ -6,7 +6,7 @@ from collections import deque
 from threading import Thread
 from handle_writer_queue import HandleWriterQueue
 class SerialHandler(Thread):
-    def __init__(self, sensor_list, writer_queue):
+    def __init__(self, sensor_list, writer_queue, gpio_writer):
         Thread.__init__(self)
         self.reader_queue = deque()
         self.sensor_list = sensor_list
@@ -15,6 +15,7 @@ class SerialHandler(Thread):
         self.writer_queue_IMU = deque()
         self.writer_queue_sensor_arduino = deque()
         self.writer_queue_stepper_arduino = deque()
+        self.gpio_writer = gpio_writer
         self.serial_connected = {}
         self.com_port_found = False
         self.handle_writer_queue = HandleWriterQueue(self.reader_queue,self.writer_queue, self.writer_queue_IMU,
@@ -80,7 +81,9 @@ class SerialHandler(Thread):
         if ("IMU" or "sensorArduino" or "stepperArduino") in message[0]:
             pass
         else:
-            if message[0] == "Temp":
+            if message[0] == ("depth" or "pressure" or "temperature"
+            or "stepper_pos_ps" or "stepper_pos_sb" or "yaw" or "roll"
+            or "pitch" or "depth_beneath_rov") :
                 if message[0] in self.sensor_list.keys():
                     print(self.sensor_list)
                     self.sensor_list[message[0]] = message[1]
