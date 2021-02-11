@@ -26,6 +26,7 @@ class PayloadWriter(Thread):
             "payload_name": "command",
             "payload_data": [command]
         }
+        
 
     def __merge_sensor_payload(self):
         sensors = []
@@ -35,7 +36,6 @@ class PayloadWriter(Thread):
             
 #             sensors.append('%s:%s'%sensor_name, sensor_value)
         json_sensor = json.dumps(self.sensor_list)
-        print(self.sensor_list)
         time.sleep(0.05)
         sensor_structure = {
             "payload_name": "sensor_data",

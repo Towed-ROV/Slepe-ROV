@@ -6,7 +6,7 @@ from collections import deque
 from threading import Thread
 from handle_writer_queue import HandleWriterQueue
 class SerialHandler(Thread):
-    def __init__(self, sensor_list, writer_queue, gpio_writer):
+    def __init__(self, sensor_list, writer_queue):
         Thread.__init__(self)
         self.reader_queue = deque()
         self.sensor_list = sensor_list
@@ -15,7 +15,6 @@ class SerialHandler(Thread):
         self.writer_queue_IMU = deque()
         self.writer_queue_sensor_arduino = deque()
         self.writer_queue_stepper_arduino = deque()
-        self.gpio_writer = gpio_writer
         self.serial_connected = {}
         self.com_port_found = False
         self.handle_writer_queue = HandleWriterQueue(self.reader_queue,self.writer_queue, self.writer_queue_IMU,
@@ -23,7 +22,6 @@ class SerialHandler(Thread):
 
     def run(self):
         if not self.com_port_found:
-            print("shit")
             self.com_port_found = self.__find_com_ports()
         while self.com_port_found:
             self.__get_incomming_messages()
@@ -69,11 +67,13 @@ class SerialHandler(Thread):
 
     def open_reader_thread(self, queue, com_port, baud_rate):
         serial_reader = SerialReader(queue, com_port, baud_rate)
+        serial_reader.daemon = True
         serial_reader.start()
         return serial_reader
 
     def __open_writer_thread(self, queue, com_port, baud_rate):
         serial_writer = SerialWriter(queue, com_port, baud_rate)
+        serial_writer.daemon = True
         serial_writer.start()
         return serial_writer
 
@@ -85,7 +85,6 @@ class SerialHandler(Thread):
             or "stepper_pos_ps" or "stepper_pos_sb" or "yaw" or "roll"
             or "pitch" or "depth_beneath_rov") :
                 if message[0] in self.sensor_list.keys():
-                    print(self.sensor_list)
                     self.sensor_list[message[0]] = message[1]
                 else:
                     sensor = Sensor(message[0], message[1])

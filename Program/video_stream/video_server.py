@@ -1,4 +1,4 @@
-from video_client_handler import VideoClientHandler
+from video_stream.video_client_handler import VideoClientHandler
 from threading import Thread
 from threading import Event
 import logging

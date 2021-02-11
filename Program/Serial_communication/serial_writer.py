@@ -14,8 +14,9 @@ class SerialWriter(Thread):
     def run(self):
         while True:
             try:
-                self.__write_serial_data(self.queue.popleft())
-                print(self.last_output)
+                test = self.queue.popleft()
+                print(test)
+                self.__write_serial_data(test)
             except (Exception) as e:
                 pass
 
@@ -27,6 +28,7 @@ class SerialWriter(Thread):
 
                 try:
                     out = output.encode('utf-8')
+                    print("shit")
                     print(out)
                     self.serial_port.write(out)
                     self.last_output = output

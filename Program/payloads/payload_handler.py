@@ -62,6 +62,7 @@ class PayloadHandler(Thread):
                         self.command_queue.append("rov_depth_offset:" + command_data)
         except (IndexError) as e:
             pass
+        
 
     def update_pitch(self):
         for sensor in self.sensor_list:

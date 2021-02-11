@@ -1,6 +1,6 @@
-from video_camera import VideoCamera
+from video_stream.video_camera import VideoCamera
 from threading import Thread
-from util import process_frame
+from video_stream.util import process_frame
 
 
 class VideoClientHandler(Thread):

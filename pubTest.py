@@ -10,7 +10,7 @@ data_to_publish = {
     "payload_name": "commands",
     "payload_data": [
         {
-            "pressure" : "10"
+            "reset" : "0"
         }
 
     ]

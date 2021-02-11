@@ -28,16 +28,17 @@ vs = VideoServer("0.0.0.0", 1337, stream_mode)
 vs.start()
 
 def start_stop_video_stream():
-    command_data = command_queue.popleft()
-    command_queue.appendleft(command_data)
-    data_type = command_data['payload_name']
-    data = command_data['payload_data']
-    if data_type == 'commands':
-        for command_name, command_data in data[0].items():
-            if command_name == 'stop_video_stream':
-                vs._stop_streaming()
-            if command_name == 'start_video_stream':
-                vs._allow_streaming()
+    try: 
+        command_data = command_queue.popleft()
+        command_queue.appendleft(command_data)
+        command_data = command_data.split(':',1)
+        command_name = command_data[0]
+        if command_name == 'stop_video_stream':
+            vs._stop_streaming()
+        if command_name == 'start_video_stream':
+            vs._allow_streaming()
+    except IndexError:
+        pass
 
 while True:
     start_stop_video_stream()
