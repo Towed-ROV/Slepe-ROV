@@ -21,7 +21,6 @@ class HandleWriterQueue:
                 self.__append_sensor_arduino_writer_queue(message)
                 print("append")
             if item[0] == "light_on_off":
-                
                 pass
             if item[0] == "target_distance":
                 self.__append_stepper_arduino_writer_queue(message)
