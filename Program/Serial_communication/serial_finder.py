@@ -29,16 +29,11 @@ class SerialFinder:
                                                 stopbits=1, bytesize=8)
                     try:
                         time.sleep(2)
-                        print("test1")
                         message_received = serial_port.readline()
                         print(message_received)
                         if message_received:
-                            
-                            print("test3")
                             message_received = message_received.strip().decode().split(self.seperation_char)
-                            print("tere")
                             port_name = message_received[0].replace('<', '')
-
                             if "IMU" in port_name:
                                 self.port_name_list[key] = "IMU"
                                 print('Found IMU')

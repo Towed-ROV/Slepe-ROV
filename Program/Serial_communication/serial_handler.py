@@ -25,8 +25,8 @@ class SerialHandler(Thread):
             self.com_port_found = self.__find_com_ports()
         while self.com_port_found:
             self.__get_incomming_messages()
-            self.handle_writer_queue.put_in_writer_queue()
-
+            self.com_port_found = self.handle_writer_queue.put_in_writer_queue(self.com_port_found)
+            
     def __find_com_ports(self):
         com_port_found = False
         com_ports_list = self.find_com_ports()

@@ -25,41 +25,45 @@ class PayloadHandler(Thread):
     def __handle_payload(self):
         try:
             data_type, data = self.__payload_reader(self.message_queue.popleft())
-           
             if data_type == 'commands':
-                for command_name, command_data in data[0].items():                    
-                    if command_name == 'reset':
-                        self.command_queue.append("reset:" + command_data)
-                    if command_name == 'light_on_off':
-                        self.gpio_writer.set_lights(command_data)
-                    if command_name == 'manual_camera_tilt_offset':
-                        self.gpio_writer.set_manual_offset_camera_tilt(command_data)
-                    if command_name == 'target_distance':
-                        self.command_queue.append("target_distance:" + command_data)
-                    if command_name == 'pid_depth_p':
-                        self.command_queue.append("pid_depth_p:" + command_data)
-                    if command_name == 'pid_depth_i':
-                        self.command_queue.append("pid_depth_i:" + command_data)
-                    if command_name == 'pid_depth_d':
-                        self.command_queue.append("pid_depth_d:" + command_data)
-                    if command_name == 'pid_trim_p':
-                        self.command_queue.append("pid_trim_p:" + command_data)
-                    if command_name == 'pid_trim_i':
-                        self.command_queue.append("pid_trim_i:" + command_data)
-                    if command_name == 'pid_trim_d':
-                        self.command_queue.append("pid_trim_d:" + command_data)
-                    if command_name == 'emergency_surface':
-                        self.command_queue.append("emergency_surface:" + command_data)
-                    if command_name == 'target_mode':
-                        self.command_queue.append("target_mode:" + command_data)
-                    if command_name == 'com_port_search':
-                        self.command_queue.append("com_port_search:" + command_data)
-                    if command_name == 'camera_zero_point':
-                        self.command_queue.append("camera_zero_point:" + command_data)
-                    if command_name == 'depth_beneath_rov_offset':
-                        self.command_queue.append("depth_beneath_rov_offset:" + command_data)
-                    if command_name == 'rov_depth_offset':
-                        self.command_queue.append("rov_depth_offset:" + command_data)
+                command_name = data.split(':',1)[0].replace('{','').replace('"',"").strip()
+                command_data = data.split(':',1)[1].replace('}','').replace('"',"").strip()
+                print(command_name)
+                print(command_data)
+                
+                if command_name == 'reset':
+                    self.command_queue.append("reset:" + command_data)
+                    print('tet')
+                if command_name == 'light_on_off':
+                    self.gpio_writer.set_lights(command_data)
+                if command_name == 'manual_camera_tilt_offset':
+                    self.gpio_writer.set_manual_offset_camera_tilt(command_data)
+                if command_name == 'target_distance':
+                    self.command_queue.append("target_distance:" + command_data)
+                if command_name == 'pid_depth_p':
+                    self.command_queue.append("pid_depth_p:" + command_data)
+                if command_name == 'pid_depth_i':
+                    self.command_queue.append("pid_depth_i:" + command_data)
+                if command_name == 'pid_depth_d':
+                    self.command_queue.append("pid_depth_d:" + command_data)
+                if command_name == 'pid_trim_p':
+                    self.command_queue.append("pid_trim_p:" + command_data)
+                if command_name == 'pid_trim_i':
+                    self.command_queue.append("pid_trim_i:" + command_data)
+                if command_name == 'pid_trim_d':
+                    self.command_queue.append("pid_trim_d:" + command_data)
+                if command_name == 'emergency_surface':
+                    self.command_queue.append("emergency_surface:" + command_data)
+                if command_name == 'target_mode':
+                    self.command_queue.append("target_mode:" + command_data)
+                if command_name == 'com_port_search':
+                    self.command_queue.append("com_port_search:" + command_data)
+                if command_name == 'camera_zero_point':
+                    self.command_queue.append("camera_zero_point:" + command_data)
+                if command_name == 'depth_beneath_rov_offset':
+                    self.command_queue.append("depth_beneath_rov_offset:" + command_data)
+                if command_name == 'rov_depth_offset':
+                    self.command_queue.append("rov_depth_offset:" + command_data)
         except (IndexError) as e:
             pass
         
@@ -71,6 +75,7 @@ class PayloadHandler(Thread):
                 self.gpio_writer.adjust_camera(sensor[1].strip())
 
     def __payload_reader(self, received_data):
+        print(received_data['payload_data'])
         data_type = received_data['payload_name']
         data = received_data['payload_data']
         return data_type, data

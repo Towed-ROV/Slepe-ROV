@@ -38,6 +38,8 @@ class SerialWriter(Thread):
         else:
             self.serial_port.open()
             print('Serial port not open : ' + str(self.com_port))
+            self.queue.appendleft(message)
+            
 
     def put_in_queue(self, item):
         self.queue.append(item)

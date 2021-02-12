@@ -34,6 +34,7 @@ class SerialReader(Thread):
             message_received = self.serial_port.readline()
             message_received = message_received.strip()
             if message_received:
+                print(message_received)
                 message_received = message_received.decode().strip(start_char).strip(end_char).split(seperation_char)
                 break
         return message_received

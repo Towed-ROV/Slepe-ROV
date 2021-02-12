@@ -7,7 +7,7 @@ class HandleWriterQueue:
         self.writer_queue_sensor_arduino = writer_queue_sensor_arduino
         self.writer_queue_stepper_arduino = writer_queue_stepper_arduino
 
-    def put_in_writer_queue(self):
+    def put_in_writer_queue(self, com_port_found):
         try:
             pitch = self.reader_queue.popleft()
             self.reader_queue.appendleft(pitch)
@@ -17,11 +17,11 @@ class HandleWriterQueue:
                     self.__append_stepper_arduino_writer_queue(pitch)
             message = self.writer_queue.popleft()
             item = message.split(':',1)
+            if item[0] == 'com_port_search':
+                return False
             if item[0] == "reset":
                 self.__append_sensor_arduino_writer_queue(message)
                 print("append")
-            if item[0] == "light_on_off":
-                pass
             if item[0] == "target_distance":
                 self.__append_stepper_arduino_writer_queue(message)
             if item[0] == "pid_depth_p":
@@ -46,16 +46,13 @@ class HandleWriterQueue:
                 self.__append_stepper_arduino_writer_queue(message)
             if item[0] == "target_mode":
                 self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "com_port_search":
-                pass
-            if item[0] == "camera_zero_point":
-                pass
             if item[0] == "depth_beneath_rov_offset":
                 self.__append_stepper_arduino_writer_queue(message)
             if item[0] == "rov_depth_offset":
                 self.__append_stepper_arduino_writer_queue(message)
         except IndexError:
             pass
+        return True
     def __append_imu_writer_queue(self, message):
         self.writer_queue_IMU.append(message)
 

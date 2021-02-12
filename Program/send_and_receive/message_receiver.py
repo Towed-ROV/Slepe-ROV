@@ -20,6 +20,9 @@ class MessageReceiver(Thread):
     def subscribe(self):
         received_data = json.loads(self.socket.recv_json())
         self.queue.append(received_data)
+        test = self.queue.popleft()
+        print(test)
+        self.queue.append(test)
 
     def connect(self):
         self.socket.connect(self.ip)
