@@ -10,6 +10,10 @@ class SerialFinder:
         self.baud_rate = 0
 
     def find_com_ports(self):
+        """
+        Loop through all available com ports on rpi and multiple baud rates.
+        :return: dict with all found com ports
+        """
         search_runs = 0
         port_names = self.get_available_com_ports()
         print(port_names)
@@ -57,6 +61,10 @@ class SerialFinder:
         return self.port_name_list
 
     def get_available_com_ports(self):
+        """
+        find all available com port on rpi
+        :return:
+        """
         ports = glob.glob('/dev/tty[A-Za-z]*')
         port_names = []
         port_exceptions = ['dev/ttyprintk']

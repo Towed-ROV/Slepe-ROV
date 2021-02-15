@@ -38,7 +38,6 @@ class VideoCamera():
         _, frame = self.cap.read()
         return frame
 
-    @staticmethod
     def get_frame_bytes(self):
         """ converts a numpy.ndarray into bytes
         Args:

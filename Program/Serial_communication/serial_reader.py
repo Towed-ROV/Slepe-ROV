@@ -18,26 +18,7 @@ class SerialReader(Thread):
                 print(e, "serial reader")
 
 
-    def read_incomming_data(self):
-        start_char = '<'
-        end_char = '>'
-        seperation_char = ':'
-        message_received = ""
 
-        if(not self.serial_port.is_open):
-            try:
-                self.serial_port.open()
-            except(Exception) as e:
-                print(e, "serial reader")
-        while True:
-            time.sleep(0.05)
-            message_received = self.serial_port.readline()
-            message_received = message_received.strip()
-            if message_received:
-                print(message_received)
-                message_received = message_received.decode().strip(start_char).strip(end_char).split(seperation_char)
-                break
-        return message_received
 
 
 

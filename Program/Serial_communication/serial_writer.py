@@ -20,30 +20,8 @@ class SerialWriter(Thread):
             except (Exception) as e:
                 pass
 
-    def __write_serial_data(self, message):
-        if self.serial_port.isOpen():
-            output = "<" + message + ">"
-            print(message)
-            if output != "self.last_output":
 
-                try:
-                    out = output.encode('utf-8')
-                    print("shit")
-                    print(out)
-                    self.serial_port.write(out)
-                    self.last_output = output
-                    self.serial_port.close()
-                except (Exception) as e:
-                    print(e, "serial writer")
-        else:
-            self.serial_port.open()
-            print('Serial port not open : ' + str(self.com_port))
-            self.queue.appendleft(message)
-            
 
-    def put_in_queue(self, item):
-        self.queue.append(item)
-        return True
 
 
 
