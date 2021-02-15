@@ -21,6 +21,10 @@ class SerialWriterReader(Thread):
                 pass
 
     def __write_serial_data(self, message):
+        """
+        write message to serial port
+        :param message: message to send to serial
+        """
         if self.serial_port.isOpen():
             output = "<" + message + ">"
             print(message)
@@ -41,6 +45,10 @@ class SerialWriterReader(Thread):
             self.queue.appendleft(message)
 
     def __read_incomming_data(self):
+        """
+        reads from serial port
+        :return: message read from serial port
+        """
         start_char = '<'
         end_char = '>'
         seperation_char = ':'

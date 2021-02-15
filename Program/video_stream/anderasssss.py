@@ -3,14 +3,16 @@ import socket
 import cv2
 import pickle
 import struct
-data = b""
-payload_size = struct.calcsize(">L")
-print("payload_size: {}".format(payload_size))
+
 
 cam = cv2.VideoCapture(0)
 
 conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-conn.connect(('10.24.94.80', 1337))
+conn.connect(('localhost', 1337))
+
+data = b""
+payload_size = struct.calcsize(">L")
+print("payload_size: {}".format(payload_size))
 
 while True:
 

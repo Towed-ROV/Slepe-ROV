@@ -13,7 +13,6 @@ class MessageDispatcher(Thread):
         self.data_queue = data_queue
 
     def run(self):
-#todo is socket connetec?
         while True:
             try:
                 self.publish()
@@ -21,8 +20,8 @@ class MessageDispatcher(Thread):
                 pass
 
     def publish(self):
-        test =self.data_queue.popleft()
-        self.socket.send_json(json.dumps(test))
+        self.socket.send_string("topic", flags=zmq.SNDMORE)
+        self.socket.send_json(json.dumps(self.data_queue.popleft()))
         
     def disconnect(self):
         self.socket.disconnect()

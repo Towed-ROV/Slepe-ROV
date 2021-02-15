@@ -23,6 +23,9 @@ class PayloadHandler(Thread):
                 print(e, "payload handler")
 
     def __handle_payload(self):
+        """
+        takes the received payload and reads it and either handles it or forwards it to the serial output queue
+        """
         try:
             data_type, data = self.__payload_reader(self.message_queue.popleft())
             if data_type == 'commands':
@@ -69,22 +72,26 @@ class PayloadHandler(Thread):
         
 
     def update_pitch(self):
+        """
+        reads the value of the pitch sensor and send this to the camera servo,
+        so it can adjust its angle according to pitch
+        """
         for sensor in self.sensor_list:
             sensor = sensor.split(':',1)
             if sensor[0].strip() == 'pitch':
                 self.gpio_writer.adjust_camera(sensor[1].strip())
 
     def __payload_reader(self, received_data):
+        """
+        extracts data from message received
+        :param received_data: data received from zmq
+        :return: the data type and the data
+        """
         print(received_data['payload_data'])
         data_type = received_data['payload_name']
         data = received_data['payload_data']
         return data_type, data
 
-    def set_command_list(self, command_list):
-        self.command_list = command_list
-
-    def set_received_data(self, received_data):
-        self.received_data = received_data
 
 if __name__ == "__main__":
     sensor_list = []

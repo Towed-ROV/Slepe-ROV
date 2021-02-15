@@ -63,7 +63,7 @@ class SerialFinder:
     def get_available_com_ports(self):
         """
         find all available com port on rpi
-        :return:
+        :return: dict with all com ports on rpi
         """
         ports = glob.glob('/dev/tty[A-Za-z]*')
         port_names = []

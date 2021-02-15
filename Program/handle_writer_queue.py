@@ -7,7 +7,11 @@ class HandleWriterQueue:
         self.writer_queue_sensor_arduino = writer_queue_sensor_arduino
         self.writer_queue_stepper_arduino = writer_queue_stepper_arduino
 
-    def put_in_writer_queue(self, com_port_found):
+    def put_in_writer_queue(self):
+        """
+        sort message from serial writer queue to the specific writer queue.
+        :return: a bool if com port need to be search after.
+        """
         try:
             pitch = self.reader_queue.popleft()
             self.reader_queue.appendleft(pitch)

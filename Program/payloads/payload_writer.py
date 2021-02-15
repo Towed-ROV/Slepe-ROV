@@ -21,14 +21,11 @@ class PayloadWriter(Thread):
             except (Exception) as e:
                 print(e,"payload writer")
 
-    def merge_command_payload(self, command):
-        command_structure = {
-            "payload_name": "command",
-            "payload_data": [command]
-        }
-        
 
     def __merge_sensor_payload(self):
+        """
+        Takes all sensor and creates a json with sensordata, adds the json to a queue.
+        """
         sensors = []
         json_sensor = ''
         

@@ -18,6 +18,9 @@ class MessageReceiver(Thread):
                 print("could not receive data")
 
     def subscribe(self):
+        """
+        read data and append to queue
+        """
         received_data = json.loads(self.socket.recv_json())
         self.queue.append(received_data)
         test = self.queue.popleft()
