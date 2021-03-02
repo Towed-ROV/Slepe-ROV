@@ -17,9 +17,10 @@ class PayloadWriter(Thread):
         time.sleep(10)
         while True:
             try:
+                self.__add_commands_to_queue()
                 self.__merge_sensor_payload()
             except (Exception) as e:
-                print(e,"payload writer")
+                print(e,'payload writer')
 
 
     def __merge_sensor_payload(self):
@@ -44,8 +45,9 @@ class PayloadWriter(Thread):
 #         print('-----------')
 
         self.message_queue.append(sensor_structure)
-
-if __name__ == "__main__":
+    def __add_commands_to_queue(self):
+        pass
+if __name__ == '__main__':
     sensor_list = {}
     sensor_list["test"] = 10
     sensor_list["test2"] = 123
