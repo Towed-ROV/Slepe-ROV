@@ -8,6 +8,6 @@ class PayloadReader:
         """
         payload_type = received_data['payload_name']
         data = received_data['payload_data']
-        payload_name = data.split(':', 1)[0].replace('{', '').replace(''', '').strip()
-        payload_data = data.split(':', 1)[1].replace('}', '').replace(''', '').strip()
+        payload_name = data.split(':', 1)[0].replace('{', '').replace("'", '').strip()
+        payload_data = data.split(':', 1)[1].replace('}', '').replace("'", '').strip()
         return payload_type, payload_name, payload_data

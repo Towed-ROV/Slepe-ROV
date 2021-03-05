@@ -19,7 +19,7 @@ class SerialHandler(Thread):
         self.writer_queue_sensor_arduino = deque()
         self.writer_queue_stepper_arduino = deque()
         self.gui_command_queue = deque()
-        self.serial_connected = {}
+        self.serial_connected = []
         self.com_port_found = False
         self.valid_sensor_list = ['depth', 'pressure', 'temperature',
                                   'stepper_pos_ps', 'stepper_pos_sb',
@@ -40,7 +40,7 @@ class SerialHandler(Thread):
                 self.__get_incomming_messages()
                 test = self.handle_writer_queue.put_in_writer_queue()
                 self.com_port_found = test
-                
+
     def __close_threads(self):
         try:
             self.imu_serial.stop_thread()
@@ -54,7 +54,7 @@ class SerialHandler(Thread):
             self.stepper_arduino_serial_writer.stop_thread()
         except (Exception) as e:
             print(e)
-            
+
     def __find_com_ports(self):
         """
         Search for com ports and open serial communication for each port found.
@@ -65,17 +65,17 @@ class SerialHandler(Thread):
             if 'IMU' in port_name:
                 self.imu_serial = self.__open_serial_thread(self.writer_queue_IMU, self.reader_queue, com_port, 4800)
                 self.writer_queue_IMU.append('IMU:OK')
-                self.serial_connected['IMU']= com_port
+                self.serial_connected.append('IMU:'+ com_port)
             if 'SensorArduino' in port_name:
                 self.sensor_arduino_serial_writer = self.__open_serial_thread(self.writer_queue_sensor_arduino,
                                                                               self.reader_queue, com_port, 4800)
                 self.writer_queue_sensor_arduino.append('sensor_arduino:OK')
-                self.serial_connected['SensorArduino']= com_port
+                self.serial_connected.append('SensorArduino:' + com_port)
             if 'StepperArduino' in port_name:
                 self.stepper_arduino_serial_writer = self.__open_serial_thread(self.writer_queue_stepper_arduino,
                                                                                self.reader_queue, com_port, 4800)
                 self.writer_queue_stepper_arduino.append('stepper_arduino:OK')
-                self.serial_connected['StepperArduino']= com_port
+                self.serial_connected.append('StepperArduino' + com_port)
         return True
 
     def __get_incomming_messages(self):
