@@ -1,7 +1,8 @@
-from send_and_receive.message_receiver import MessageReceiver
-from payloads.payload_reader import PayloadReader
-from GPIO_writer import GPIOWriter
+from Program.send_and_receive.message_receiver import MessageReceiver
+from Program.payloads.payload_reader import PayloadReader
+# from Program.GPIO_writer import GPIOWriter
 from collections import deque
+import json
 from threading import Thread
 class PayloadHandler(Thread):
     def __init__(self, sensor_list, command_queue, start1):
@@ -18,7 +19,7 @@ class PayloadHandler(Thread):
         self.message_receiver.daemon = True
         self.message_receiver.start()
         self.command_queue = command_queue
-        self.gpio_writer = GPIOWriter()
+        # self.gpio_writer = GPIOWriter()
         self.payload_reader = PayloadReader()
         self.start1 = True
 
@@ -35,54 +36,60 @@ class PayloadHandler(Thread):
         takes the received payload and reads it and either handles it or forwards it to the serial output queue
         """
         try:
-            payload_type, payload_name, payload_data = self.payload_reader.read_payload(self.message_queue.popleft())
+            test = self.message_queue.popleft()
+            print(test)
+            payload_type, payload_names, payload_data = self.payload_reader.read_payload(test)
             print(payload_type)
-            print(payload_name)
+            print(payload_names)
             print(payload_data)
             if payload_type == 'commands':
-                if payload_name == 'start':
-                    self.start1 = 1
+                if payload_data[0] == 'start':
+                    self.start1 = payload_data[1]
                     print('sda')
-                if payload_name == 'stop':
-                    self.start1 = 2
-                if payload_name == 'reset':
+                if payload_data[0] == 'stop':
+                    self.start1 = payload_data[1]
+                if payload_data[0] == 'reset':
                     self.command_queue.append('reset:' + payload_data)
-                if payload_name == 'light_on_off':
-                    self.gpio_writer.set_lights(payload_data)
-                if payload_name == 'manual_camera_tilt_offset':
-                    self.gpio_writer.set_manual_offset_camera_tilt(payload_data)
-                if payload_name == 'target_distance':
-                    self.command_queue.append('target_distance:' + payload_data)
-                if payload_name == 'pid_depth_p':
-                    self.command_queue.append('pid_depth_p:' + payload_data)
-                if payload_name == 'pid_depth_i':
-                    self.command_queue.append('pid_depth_i:' + payload_data)
-                if payload_name == 'pid_depth_d':
-                    self.command_queue.append('pid_depth_d:' + payload_data)
-                if payload_name == 'pid_trim_p':
-                    self.command_queue.append('pid_trim_p:' + payload_data)
-                if payload_name == 'pid_trim_i':
-                    self.command_queue.append('pid_trim_i:' + payload_data)
-                if payload_name == 'pid_trim_d':
-                    self.command_queue.append('pid_trim_d:' + payload_data)
-                if payload_name == 'emergency_surface':
-                    self.command_queue.append('emergency_surface:' + payload_data)
-                if payload_name == 'target_mode':
-                    self.command_queue.append('target_mode:' + payload_data)
-                if payload_name == 'com_port_search':
-                    self.command_queue.append('com_port_search:' + payload_data)
-                if payload_name == 'camera_zero_point':
-                    self.command_queue.append('camera_zero_point:' + payload_data)
-                if payload_name == 'depth_beneath_rov_offset':
-                    self.command_queue.append('depth_beneath_rov_offset:' + payload_data)
-                if payload_name == 'rov_depth_offset':
-                    self.command_queue.append('rov_depth_offset:' + payload_data)
-            if payload_type == 'setting':
-                if payload_name == 'arduino sensor':
+                if payload_data[0] == 'light_on_off':
+                    pass
+                    # self.gpio_writer.set_lights(payload_data)
+                if payload_data[0] == 'manual_camera_tilt_offset':
+                    pass
+                    # self.gpio_writer.set_manual_offset_camera_tilt(payload_data)
+                if payload_data[0] == 'target_distance':
+                    self.command_queue.append('target_distance:' + payload_data[1])
+                if payload_data[0] == 'pid_depth_p':
+                    self.command_queue.append('pid_depth_p:' + payload_data[1])
+                if payload_data[0] == 'pid_depth_i':
+                    self.command_queue.append('pid_depth_i:' + payload_data[1])
+                if payload_data[0] == 'pid_depth_d':
+                    self.command_queue.append('pid_depth_d:' + payload_data[1])
+                if payload_data[0] == 'pid_trim_p':
+                    self.command_queue.append('pid_trim_p:' + payload_data[1])
+                if payload_data[0] == 'pid_trim_i':
+                    self.command_queue.append('pid_trim_i:' + payload_data[1])
+                if payload_data[0] == 'pid_trim_d':
+                    self.command_queue.append('pid_trim_d:' + payload_data[1])
+                if payload_data[0] == 'emergency_surface':
+                    self.command_queue.append('emergency_surface:' + payload_data[1])
+                if payload_data[0] == 'target_mode':
+                    self.command_queue.append('target_mode:' + payload_data[1])
+                if payload_data[0] == 'com_port_search':
+                    self.command_queue.append('com_port_search:' + payload_data[1])
+                if payload_data[0] == 'camera_zero_point':
+                    self.command_queue.append('camera_zero_point:' + payload_data[1])
+                if payload_data[0] == 'depth_beneath_rov_offset':
+                    self.command_queue.append('depth_beneath_rov_offset:' + payload_data[1])
+                if payload_data[0] == 'rov_depth_offset':
+                    self.command_queue.append('rov_depth_offset:' + payload_data[1])
+            if payload_type == 'settings':
+                if payload_data[0] == 'arduino sensor':
                     print('appended')
-                    self.command_queue.append('arduino sensor:' + payload_data)
-                if payload_name == 'arduino stepper':
-                    self.command_queue.append('arduino stepper:' +  payload_data)
+                    self.command_queue.append('arduino sensor:' + payload_data[1] + ':' + payload_data[2])
+                if payload_data[0] == 'arduino stepper':
+                    self.command_queue.append('arduino stepper:' + payload_data[1] + ':' + payload_data[2])
+            # if payload_type == 'request':
+
         except (IndexError) as e:
             pass
         
@@ -95,16 +102,29 @@ class PayloadHandler(Thread):
         for sensor in self.sensor_list:
             sensor = sensor.split(':',1)
             if sensor[0].strip() == 'pitch':
-                self.gpio_writer.adjust_camera(sensor[1].strip())
-
+                # self.gpio_writer.adjust_camera(sensor[1].strip())
+                pass
 
 
 if __name__ == '__main__':
     sensor_list = []
+    start1 =  False
     sensor_list.append('fuck : 8')
     queue = deque()
-    payload = PayloadHandler(sensor_list, queue)
-    payload.update_pitch()
 
+    payload = PayloadHandler(sensor_list, queue, start1)
 
-
+    payload.message_queue.append(json.loads(json.dumps(
+        {
+            "payload_name": "commands",
+            "payload_data": [
+                {
+                    "name": "start",
+                    "value": 0.00,
+                    "test" : 123
+                }
+            ]
+        }
+    )
+    ))
+    payload.run()
