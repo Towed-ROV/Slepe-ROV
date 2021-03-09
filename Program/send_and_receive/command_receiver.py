@@ -5,7 +5,7 @@ import zmq
 class CommandReceiver(Thread):
     """ DOCS """
 
-    def __init__(self, cmd_queue, host="127.0.0.1", port=1337):
+    def __init__(self, cmd_queue, host="192.168.0.20", port=8765):
         Thread.__init__(self)
         self.ctx = zmq.Context()
         self.connection = self.ctx.socket(zmq.REP)
@@ -28,10 +28,6 @@ class CommandReceiver(Thread):
         while True:
             try:
                 cmd = self.recv()
-                print(" [GOT] ", cmd)
-                self.cmd_queue.put(cmd)
-                _response = {"msg": "ok bro"}
-                self.send(_response)
-                print("[SENT] ", _response)
-            except KeyboardInterrupt:
-                break
+                self.cmd_queue.append(cmd)
+            except (Exception) as e:
+                pass

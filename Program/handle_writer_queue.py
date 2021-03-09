@@ -31,8 +31,7 @@ class HandleWriterQueue:
                 print('com')
                 return False
             if item[0] == 'reset':
-                self.__append_sensor_arduino_writer_queue(message)
-                print('append')
+                self.__append_stepper_arduino_writer_queue(message)
             if item[0] == 'target_distance':
                 self.__append_stepper_arduino_writer_queue(message)
             if item[0] == 'pid_depth_p':
@@ -62,12 +61,9 @@ class HandleWriterQueue:
             if item[0] == 'rov_depth_offset':
                 self.__append_stepper_arduino_writer_queue(message)
             if item[0] == 'arduino sensor':
-                print('arduino sensor appended')
-                print(item[1])
                 self.__append_sensor_arduino_writer_queue(item[1])
                 item = item[1].split(':',1)
                 self.valid_sensor_list.append(item[0])
-                print(self.valid_sensor_list)
             if item[0] == 'arduino stepper':
                 self.__append_stepper_arduino_writer_queue(message)
         except IndexError:

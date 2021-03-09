@@ -1,5 +1,6 @@
-from Program.send_and_receive.message_receiver import MessageReceiver
-from Program.payloads.payload_reader import PayloadReader
+from send_and_receive.message_receiver import MessageReceiver
+from send_and_receive.command_receiver import CommandReceiver
+from payloads.payload_reader import PayloadReader
 # from Program.GPIO_writer import GPIOWriter
 from collections import deque
 import json
@@ -18,6 +19,9 @@ class PayloadHandler(Thread):
         self.message_receiver = MessageReceiver(self.message_queue)
         self.message_receiver.daemon = True
         self.message_receiver.start()
+        self.command_receiver = CommandReceiver(self.message_queue)
+        self.command_receiver.daemon = True
+        self.command_receiver.start()
         self.command_queue = command_queue
         # self.gpio_writer = GPIOWriter()
         self.payload_reader = PayloadReader()
@@ -53,11 +57,11 @@ class PayloadHandler(Thread):
                 if payload_data[0] == 'light_on_off':
                     pass
                     # self.gpio_writer.set_lights(payload_data)
-                if payload_data[0] == 'manual_camera_tilt_offset':
+                if payload_data[0] == 'camera_offset_angle':
                     pass
                     # self.gpio_writer.set_manual_offset_camera_tilt(payload_data)
-                if payload_data[0] == 'target_distance':
-                    self.command_queue.append('target_distance:' + payload_data[1])
+                if payload_data[0] == 'set_point':
+                    self.command_queue.append('set_point:' + payload_data[1])
                 if payload_data[0] == 'pid_depth_p':
                     self.command_queue.append('pid_depth_p:' + payload_data[1])
                 if payload_data[0] == 'pid_depth_i':
@@ -84,7 +88,6 @@ class PayloadHandler(Thread):
                     self.command_queue.append('rov_depth_offset:' + payload_data[1])
             if payload_type == 'settings':
                 if payload_data[0] == 'arduino sensor':
-                    print('appended')
                     self.command_queue.append('arduino sensor:' + payload_data[1] + ':' + payload_data[2])
                 if payload_data[0] == 'arduino stepper':
                     self.command_queue.append('arduino stepper:' + payload_data[1] + ':' + payload_data[2])
