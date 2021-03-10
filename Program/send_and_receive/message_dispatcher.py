@@ -1,6 +1,5 @@
 import zmq
 import json
-import time
 from threading import Thread
 
 class MessageDispatcher(Thread):
@@ -20,7 +19,6 @@ class MessageDispatcher(Thread):
                 pass
 
     def publish(self):
-        self.socket.send_string('topic', flags=zmq.SNDMORE)
         self.socket.send_json(json.dumps(self.data_queue.popleft()))
         
     def disconnect(self):

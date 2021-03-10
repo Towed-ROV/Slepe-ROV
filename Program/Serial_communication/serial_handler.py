@@ -1,9 +1,9 @@
-from Serial_communication.serial import SerialWriterReader
-from Serial_communication.serial_finder import SerialFinder
+from Program.Serial_communication.serial import SerialWriterReader
+from Program.Serial_communication.serial_finder import SerialFinder
 from collections import deque
 from threading import Thread
-from handle_writer_queue import HandleWriterQueue
-from Serial_communication.serial_message_recived_handler import SerialMessageRecivedHandler
+from Program.Serial_communication.handle_writer_queue import HandleWriterQueue
+from Program.Serial_communication.serial_message_recived_handler import SerialMessageRecivedHandler
 class SerialHandler(Thread):
     def __init__(self, sensor_list, arduino_command_queue, gui_command_queue):
         """

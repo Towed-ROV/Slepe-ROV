@@ -1,6 +1,6 @@
 import json
 import time
-from send_and_receive.message_dispatcher import MessageDispatcher
+from Program.send_and_receive.message_dispatcher import MessageDispatcher
 from threading import Thread
 from collections import deque
 class PayloadWriter(Thread):

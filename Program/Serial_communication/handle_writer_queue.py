@@ -32,7 +32,7 @@ class HandleWriterQueue:
                 return False
             if item[0] == 'reset':
                 self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == 'target_distance':
+            if item[0] == 'set_point':
                 self.__append_stepper_arduino_writer_queue(message)
             if item[0] == 'pid_depth_p':
                 self.__append_stepper_arduino_writer_queue(message)
@@ -46,26 +46,26 @@ class HandleWriterQueue:
                 self.__append_stepper_arduino_writer_queue(message)
             if item[0] == 'pid_trim_d':
                 self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == 'pid_seafloor_p':
+            if item[0] == 'manual_wing_pos_up':
                 self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == 'pid_seafloor_i':
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == 'pid_seafloor_d':
+            if item[0] == 'manual_wing_pos_down':
                 self.__append_stepper_arduino_writer_queue(message)
             if item[0] == 'emergency_surface':
                 self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == 'target_mode':
+            if item[0] == 'depth_or_seafloor':
                 self.__append_stepper_arduino_writer_queue(message)
             if item[0] == 'depth_beneath_rov_offset':
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == 'rov_depth_offset':
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == 'arduino sensor':
+                self.__append_sensor_arduino_writer_queue(message)
+            if item[0] == 'depth_rov_offset':
+                self.__append_sensor_arduino_writer_queue(message)
+            if item[0] == 'arduino_sensor':
                 self.__append_sensor_arduino_writer_queue(item[1])
                 item = item[1].split(':',1)
                 self.valid_sensor_list.append(item[0])
-            if item[0] == 'arduino stepper':
-                self.__append_stepper_arduino_writer_queue(message)
+            if item[0] == 'arduino_stepper':
+                self.__append_stepper_arduino_writer_queue(item[1])
+                item = item[1].split(':',1)
+                self.valid_sensor_list.append(item[0])
         except IndexError:
             pass
         return True

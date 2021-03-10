@@ -1,6 +1,6 @@
-from send_and_receive.message_receiver import MessageReceiver
-from send_and_receive.command_receiver import CommandReceiver
-from payloads.payload_reader import PayloadReader
+from Program.send_and_receive.message_receiver import MessageReceiver
+from Program.send_and_receive.command_receiver import CommandReceiver
+from Program.payloads.payload_reader import PayloadReader
 # from Program.GPIO_writer import GPIOWriter
 from collections import deque
 import json
@@ -47,13 +47,14 @@ class PayloadHandler(Thread):
             print(payload_names)
             print(payload_data)
             if payload_type == 'commands':
-                if payload_data[0] == 'start':
+                if payload_data[0] == 'start_system':
                     self.start1 = payload_data[1]
-                    print('sda')
-                if payload_data[0] == 'stop':
-                    self.start1 = payload_data[1]
+                if payload_data[0] == 'com_port_search':
+                    self.command_queue.append('com_port_search:' + payload_data[1])
                 if payload_data[0] == 'reset':
                     self.command_queue.append('reset:' + payload_data)
+                if payload_data[0] == 'com_port_search':
+                    self.command_queue.append('com_port_search:' + payload_data)
                 if payload_data[0] == 'light_on_off':
                     pass
                     # self.gpio_writer.set_lights(payload_data)
@@ -62,6 +63,7 @@ class PayloadHandler(Thread):
                     # self.gpio_writer.set_manual_offset_camera_tilt(payload_data)
                 if payload_data[0] == 'set_point':
                     self.command_queue.append('set_point:' + payload_data[1])
+
                 if payload_data[0] == 'pid_depth_p':
                     self.command_queue.append('pid_depth_p:' + payload_data[1])
                 if payload_data[0] == 'pid_depth_i':
@@ -74,23 +76,25 @@ class PayloadHandler(Thread):
                     self.command_queue.append('pid_trim_i:' + payload_data[1])
                 if payload_data[0] == 'pid_trim_d':
                     self.command_queue.append('pid_trim_d:' + payload_data[1])
+
+                if payload_data[0] == 'manual_wing_pos_up':
+                    self.command_queue.append('manual_wing_pos_up:' + payload_data[1])
+                if payload_data[0] == 'manual_wing_pos_down':
+                    self.command_queue.append('manual_wing_pos_down:' + payload_data[1])
                 if payload_data[0] == 'emergency_surface':
                     self.command_queue.append('emergency_surface:' + payload_data[1])
-                if payload_data[0] == 'target_mode':
-                    self.command_queue.append('target_mode:' + payload_data[1])
-                if payload_data[0] == 'com_port_search':
-                    self.command_queue.append('com_port_search:' + payload_data[1])
-                if payload_data[0] == 'camera_zero_point':
-                    self.command_queue.append('camera_zero_point:' + payload_data[1])
+                if payload_data[0] == 'depth_or_seafloor':
+                    self.command_queue.append('depth_or_seafloot:' + payload_data[1])
+
                 if payload_data[0] == 'depth_beneath_rov_offset':
                     self.command_queue.append('depth_beneath_rov_offset:' + payload_data[1])
-                if payload_data[0] == 'rov_depth_offset':
-                    self.command_queue.append('rov_depth_offset:' + payload_data[1])
+                if payload_data[0] == 'depth_rov_offset':
+                    self.command_queue.append('depth_rov_offset:' + payload_data[1])
             if payload_type == 'settings':
                 if payload_data[0] == 'arduino sensor':
-                    self.command_queue.append('arduino sensor:' + payload_data[1] + ':' + payload_data[2])
+                    self.command_queue.append('arduino_sensor:' + payload_data[1] + ':' + payload_data[2])
                 if payload_data[0] == 'arduino stepper':
-                    self.command_queue.append('arduino stepper:' + payload_data[1] + ':' + payload_data[2])
+                    self.command_queue.append('arduino_stepper:' + payload_data[1] + ':' + payload_data[2])
             # if payload_type == 'request':
 
         except (IndexError) as e:

@@ -1,4 +1,4 @@
-from sensor import Sensor
+from Program.sensor import Sensor
 class SerialMessageRecivedHandler:
     def __init__(self, gui_command_queue, sensor_list, valid_sensor_list):
         self.message_received_queue = gui_command_queue
