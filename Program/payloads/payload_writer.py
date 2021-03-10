@@ -68,3 +68,12 @@ if __name__ == '__main__':
     payload = PayloadWriter()
     test = payload.merge_payload(sensor_list)
 
+response_structure = {
+                "payload_name": "response",
+                "payload_data": [
+                    {
+                        "command": "manual_wing_pos_up",
+                        "success": True
+                    }
+                ]
+            }

@@ -32,7 +32,7 @@ class HandleWriterQueue:
                 return False
             if item[0] == 'reset':
                 self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == 'set_point':
+            if item[0] == 'target_distance':
                 self.__append_stepper_arduino_writer_queue(message)
             if item[0] == 'pid_depth_p':
                 self.__append_stepper_arduino_writer_queue(message)

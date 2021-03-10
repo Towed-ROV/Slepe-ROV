@@ -61,8 +61,8 @@ class PayloadHandler(Thread):
                 if payload_data[0] == 'camera_offset_angle':
                     pass
                     # self.gpio_writer.set_manual_offset_camera_tilt(payload_data)
-                if payload_data[0] == 'set_point':
-                    self.command_queue.append('set_point:' + payload_data[1])
+                if payload_data[0] == 'target_distance':
+                    self.command_queue.append('target_distance:' + payload_data[1])
 
                 if payload_data[0] == 'pid_depth_p':
                     self.command_queue.append('pid_depth_p:' + payload_data[1])
