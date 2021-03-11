@@ -10,7 +10,7 @@ while True:
         received_data = json.loads(socket.recv_json())
         data = received_data['payload_name']
         data = data.split(':',1)
-        print(data[0])
+        print(received_data)
         if data[0] ==  'commands':
             print(received_data['payload_data'])
             break

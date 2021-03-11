@@ -7,4 +7,4 @@ import struct
 def process_frame(frame_bytes):
     data = pickle.dumps(frame_bytes, 0)
     size = len(data)
-    return struct.pack('>L', size) + data
+    return struct.pack(">L", size) + data

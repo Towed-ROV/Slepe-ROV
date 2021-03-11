@@ -21,9 +21,9 @@ class VideoClientHandler(Thread):
 
     def run(self):
         if not self.streaming_flag:
-            raise Exception('Missing stream flag')
+            raise Exception("Missing stream flag")
         if not self.log:
-            raise Exception('Missing logger')
+            raise Exception("Missing logger")
         try:
             while self.streaming_flag.is_set():
                 frame_bytes = self.camera.get_frame_bytes()
@@ -31,8 +31,8 @@ class VideoClientHandler(Thread):
                 self.client_connection.sendall(payload)
             self.client_connection.close()
         except ConnectionAbortedError:
-            self.log.error(f'ConnectionAbortedError -> {self.client_info}')
+            self.log.error(f"ConnectionAbortedError -> {self.client_info}")
         except ConnectionResetError:
-            self.log.error(f'ConnectionResetError -> {self.client_info}')
+            self.log.error(f"ConnectionResetError -> {self.client_info}")
         finally:
-            self.log.warning(f'VideoClientHandler exit: {self.client_info}')
+            self.log.warning(f"VideoClientHandler exit: {self.client_info}")
