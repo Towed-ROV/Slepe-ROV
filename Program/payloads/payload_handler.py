@@ -5,6 +5,8 @@ from Program.payloads.payload_reader import PayloadReader
 from collections import deque
 import json
 from threading import Thread
+
+
 class PayloadHandler(Thread):
     def __init__(self, sensor_list, command_queue, start1):
         """
@@ -25,18 +27,18 @@ class PayloadHandler(Thread):
         self.command_queue = command_queue
         # self.gpio_writer = GPIOWriter()
         self.payload_reader = PayloadReader()
-        self.start1 = True
+        self.start_rov = False
         self.commands_to_serial = {'com_port_search', 'reset', 'com_port_search',
-                               'pid_depth_p', 'pid_depth_i', 'pid_depth_d', 'pid_roll_p',
-                               'pid_roll_i', 'pid_roll_d', 'manual_wing_pos_up', 'manual_wing_pos_down',
-                               'emergency_surface', 'depth_beneath_rov_offset', 'depth_rov_offset' }
-        self.commands_to_handel = {'lights_on_off', 'camera_offset_angle', 'start_system', 'depth_or_seafloor'}
+                                   'pid_depth_p', 'pid_depth_i', 'pid_depth_d', 'pid_roll_p',
+                                   'pid_roll_i', 'pid_roll_d', 'manual_wing_pos_up', 'manual_wing_pos_down',
+                                   'emergency_surface', 'depth_beneath_rov_offset', 'depth_rov_offset'}
+        self.commands_to_handle = {'lights_on_off', 'camera_offset_angle', 'start_system', 'depth_or_seafloor'}
 
     def run(self):
         while True:
             try:
-                self.__sort_payload()
                 self.__update_pitch()
+                self.__sort_payload()
             except (Exception) as e:
                 print(e, 'payload handler')
 
@@ -45,9 +47,7 @@ class PayloadHandler(Thread):
         takes the received payload and reads it and either handles it or forwards it to the serial output queue
         """
         try:
-            test = self.message_queue.popleft()
-            print(test)
-            payload_type, payload_names, payload_data = self.payload_reader.read_payload(test)
+            payload_type, payload_names, payload_data = self.payload_reader.read_payload(self.message_queue.popleft())
             print(payload_type)
             print(payload_names)
             print(payload_data)
@@ -55,7 +55,7 @@ class PayloadHandler(Thread):
                 if payload_data[0] in self.commands_to_serial:
                     self.command_queue.append(payload_data[0] + ':' + payload_data[1])
                 elif payload_data[0] == 'start_system':
-                    self.start1 = payload_data[1]
+                    self.start_rov = payload_data[1]
                 elif payload_data[0] == 'light_on_off':
                     pass
                     # self.gpio_writer.set_lights(payload_data)
@@ -69,11 +69,9 @@ class PayloadHandler(Thread):
                     self.command_queue.append('arduino_sensor:' + payload_data[1] + ':' + payload_data[2])
                 if payload_data[0] == 'arduino stepper':
                     self.command_queue.append('arduino_stepper:' + payload_data[1] + ':' + payload_data[2])
-            # if payload_type == 'request':
 
         except (IndexError) as e:
             pass
-        
 
     def __update_pitch(self):
         """
@@ -81,7 +79,7 @@ class PayloadHandler(Thread):
         so it can adjust its angle according to pitch
         """
         for sensor in self.sensor_list:
-            sensor = sensor.split(':',1)
+            sensor = sensor.split(':', 1)
             if sensor[0].strip() == 'pitch':
                 # self.gpio_writer.adjust_camera(sensor[1].strip())
                 pass
@@ -89,7 +87,7 @@ class PayloadHandler(Thread):
 
 if __name__ == '__main__':
     sensor_list = []
-    start1 =  False
+    start1 = False
     sensor_list.append('fuck : 8')
     queue = deque()
 
@@ -102,7 +100,7 @@ if __name__ == '__main__':
                 {
                     "name": "start",
                     "value": 0.00,
-                    "test" : 123
+                    "test": 123
                 }
             ]
         }

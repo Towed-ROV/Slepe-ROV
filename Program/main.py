@@ -8,7 +8,6 @@ from Program.video_stream.video_server import VideoServer
 arduino_command_queue = deque()
 sensor_list = {}
 gui_command_queue = deque()
-start1 = 0
 #starting threads
 payload_writer = PayloadWriter(sensor_list, gui_command_queue)
 serial_handler = SerialHandler(sensor_list, arduino_command_queue, gui_command_queue)
@@ -52,9 +51,9 @@ def __stop_threads():
 
 while True:
     try:
-        if payload_handler.start1 != 0:
+        if payload_handler.start_rov != 0:
             start_stop_video_stream()
-            if payload_handler.start1 == 1 and not(payload_writer.is_alive() or serial_handler.is_alive()):
+            if payload_handler.start_rov == 1 and not(payload_writer.is_alive() or serial_handler.is_alive()):
                 print('starting threads')
                 __start_communication_threads()
             else:

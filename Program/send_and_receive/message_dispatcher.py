@@ -15,7 +15,7 @@ class MessageDispatcher(Thread):
         while True:
             try:
                 self.publish()
-            except (Exception) as e:
+            except (IndexError) as e:
                 pass
 
     def publish(self):
