@@ -26,6 +26,11 @@ class PayloadHandler(Thread):
         # self.gpio_writer = GPIOWriter()
         self.payload_reader = PayloadReader()
         self.start1 = True
+        self.commands_to_serial = {'com_port_search', 'reset', 'com_port_search',
+                               'pid_depth_p', 'pid_depth_i', 'pid_depth_d', 'pid_roll_p',
+                               'pid_roll_i', 'pid_roll_d', 'manual_wing_pos_up', 'manual_wing_pos_down',
+                               'emergency_surface', 'depth_beneath_rov_offset', 'depth_rov_offset' }
+        self.commands_to_handel = {'lights_on_off', 'camera_offset_angle', 'start_system', 'depth_or_seafloor'}
 
     def run(self):
         while True:
@@ -47,49 +52,18 @@ class PayloadHandler(Thread):
             print(payload_names)
             print(payload_data)
             if payload_type == 'commands':
-                if payload_data[0] == 'start_system':
+                if payload_data[0] in self.commands_to_serial:
+                    self.command_queue.append(payload_data[0] + ':' + payload_data[1])
+                elif payload_data[0] == 'start_system':
                     self.start1 = payload_data[1]
-                if payload_data[0] == 'com_port_search':
-                    self.command_queue.append('com_port_search:' + payload_data[1])
-                if payload_data[0] == 'reset':
-                    self.command_queue.append('reset:' + payload_data)
-                if payload_data[0] == 'com_port_search':
-                    self.command_queue.append('com_port_search:' + payload_data)
-                if payload_data[0] == 'light_on_off':
+                elif payload_data[0] == 'light_on_off':
                     pass
                     # self.gpio_writer.set_lights(payload_data)
-                if payload_data[0] == 'camera_offset_angle':
+                elif payload_data[0] == 'camera_offset_angle':
                     pass
                     # self.gpio_writer.set_manual_offset_camera_tilt(payload_data)
-                if payload_data[0] == 'target_distance':
-                    self.command_queue.append('target_distance:' + payload_data[1])
-
-                if payload_data[0] == 'pid_depth_p':
-                    self.command_queue.append('pid_depth_p:' + payload_data[1])
-                if payload_data[0] == 'pid_depth_i':
-                    self.command_queue.append('pid_depth_i:' + payload_data[1])
-                if payload_data[0] == 'pid_depth_d':
-                    self.command_queue.append('pid_depth_d:' + payload_data[1])
-                if payload_data[0] == 'pid_trim_p':
-                    self.command_queue.append('pid_trim_p:' + payload_data[1])
-                if payload_data[0] == 'pid_trim_i':
-                    self.command_queue.append('pid_trim_i:' + payload_data[1])
-                if payload_data[0] == 'pid_trim_d':
-                    self.command_queue.append('pid_trim_d:' + payload_data[1])
-
-                if payload_data[0] == 'manual_wing_pos_up':
-                    self.command_queue.append('manual_wing_pos_up:' + payload_data[1])
-                if payload_data[0] == 'manual_wing_pos_down':
-                    self.command_queue.append('manual_wing_pos_down:' + payload_data[1])
-                if payload_data[0] == 'emergency_surface':
-                    self.command_queue.append('emergency_surface:' + payload_data[1])
-                if payload_data[0] == 'depth_or_seafloor':
+                elif payload_data[0] == 'depth_or_seafloor':
                     self.command_queue.append('depth_or_seafloot:' + payload_data[1])
-
-                if payload_data[0] == 'depth_beneath_rov_offset':
-                    self.command_queue.append('depth_beneath_rov_offset:' + payload_data[1])
-                if payload_data[0] == 'depth_rov_offset':
-                    self.command_queue.append('depth_rov_offset:' + payload_data[1])
             if payload_type == 'settings':
                 if payload_data[0] == 'arduino sensor':
                     self.command_queue.append('arduino_sensor:' + payload_data[1] + ':' + payload_data[2])
