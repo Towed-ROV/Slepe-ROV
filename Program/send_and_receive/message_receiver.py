@@ -25,7 +25,7 @@ class MessageReceiver(Thread):
         """
         read data and append to queue
         """
-        received_data = json.loads(self.socket.recv_json())
+        received_data = self.socket.recv_json()
         self.queue.append(received_data)
         test = self.queue.popleft()
         print(test)

@@ -1,7 +1,7 @@
 import zmq
 import json
 from threading import Thread
-
+from time import sleep
 class MessageDispatcher(Thread):
     def __init__(self, data_queue):
         Thread.__init__(self)
@@ -14,16 +14,15 @@ class MessageDispatcher(Thread):
     def run(self):
         while True:
             try:
+                sleep(0.5)
                 self.publish()
-            except (IndexError) as e:
+            except (Exception) as e:
                 pass
 
     def publish(self):
-<<<<<<< Updated upstream
-        self.socket.send_string("topic", flags=zmq.SNDMORE)
-=======
->>>>>>> Stashed changes
-        self.socket.send_json(json.dumps(self.data_queue.popleft()))
+        test = self.data_queue.popleft()
+        print(test)
+        self.socket.send_json(test)
         
     def disconnect(self):
         self.socket.disconnect()

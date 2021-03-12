@@ -1,18 +1,9 @@
-<<<<<<< Updated upstream
-from Program.payloads.payload_writer import PayloadWriter
-from Program.payloads.payload_handler import PayloadHandler
-from Program.Serial_communication.serial_handler import SerialHandler
-from collections import deque
-from threading import Event
-from Program.video_stream.video_server import VideoServer
-=======
 from payloads.payload_writer import PayloadWriter
 from payloads.payload_handler import PayloadHandler
 from Serial_communication.serial_handler import SerialHandler
 from collections import deque
 from threading import Event
 from video_stream.video_server import VideoServer
->>>>>>> Stashed changes
 
 arduino_command_queue = deque()
 sensor_list = {}
@@ -24,9 +15,10 @@ payload_handler = PayloadHandler(sensor_list, arduino_command_queue)
 payload_handler.daemon = True
 payload_handler.start()
 
+
 #video stream
 stream_mode = Event()
-vs = VideoServer('0.0.0.0', 1337, stream_mode)
+vs = VideoServer('192.168.0.102', 1337, stream_mode)
 vs.start()
 
 def start_stop_video_stream():

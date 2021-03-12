@@ -32,24 +32,15 @@ class SerialFinder:
                     serial_port = serial.Serial(key, self.baud_rate, timeout=1,
                                                 stopbits=1, bytesize=8)
                     try:
-<<<<<<< Updated upstream
-                        time.sleep(2)
-=======
                         sleep(2)
                         print('check this fukkeer')
->>>>>>> Stashed changes
                         message_received = serial_port.readline()
                         print(message_received)
                         if message_received:
                             message_received = message_received.strip().decode().split(self.seperation_char)
                             port_name = message_received[0].replace('<', '')
-<<<<<<< Updated upstream
-                            if "IMU" in port_name:
-                                self.port_name_list[key] = "IMU"
-=======
                             if 'IMU' in port_name:
                                 self.port_name_list[key] = 'IMU'
->>>>>>> Stashed changes
                                 print('Found IMU')
 
                             elif 'sensorArduino' in port_name:

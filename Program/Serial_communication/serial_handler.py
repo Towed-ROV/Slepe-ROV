@@ -5,19 +5,11 @@ from threading import Thread
 from Serial_communication.handle_writer_queue import HandleWriterQueue
 from Serial_communication.serial_message_recived_handler import SerialMessageRecivedHandler
 class SerialHandler(Thread):
-<<<<<<< Updated upstream
-    def __init__(self, sensor_list, writer_queue):
-        """
-
-        :param sensor_list: list of all sensor connected
-        :param writer_queue: queue storing data that are going to be sent serial
-=======
     def __init__(self, sensor_list, arduino_command_queue, gui_command_queue):
         """
 
         :param sensor_list: list of all sensor connected
         :param arduino_command_queue: queue storing data that are going to be sent serial
->>>>>>> Stashed changes
         """
         Thread.__init__(self)
         self.reader_queue = deque()
@@ -37,14 +29,6 @@ class SerialHandler(Thread):
                                               self.writer_queue_sensor_arduino, self.writer_queue_stepper_arduino,
                                                      self.valid_sensor_list)
     def run(self):
-<<<<<<< Updated upstream
-        if not self.com_port_found:
-            self.com_port_found = self.__find_com_ports()
-        while self.com_port_found:
-            self.__get_incomming_messages()
-            self.com_port_found = self.handle_writer_queue.put_in_writer_queue(self.com_port_found)
-            
-=======
         while True:
             if not self.com_port_found:
                 self.__close_threads()
@@ -71,35 +55,11 @@ class SerialHandler(Thread):
         except (Exception) as e:
             print(e)
 
->>>>>>> Stashed changes
     def __find_com_ports(self):
         """
         Search for com ports and open serial communication for each port found.
         :return: true if a comport is found and false if not
         """
-<<<<<<< Updated upstream
-        com_port_found = False
-        com_ports_list = self.find_com_ports()
-        for com_port, port_name in com_ports_list.items():
-            if "IMU" in port_name:
-                self.imu_serial = self.__open_serial_thread(self.writer_queue_IMU, self.reader_queue, com_port, 4800)
-                self.writer_queue_IMU.append("IMU:OK")
-                self.serial_connected["IMU"]= com_port
-                com_port_found = True
-            if "SensorArduino" in port_name:
-                self.sensor_arduino_serial_writer = self.__open_serial_thread(self.writer_queue_sensor_arduino,
-                                                                              self.reader_queue, com_port, 4800)
-                self.writer_queue_sensor_arduino.append("sensor_arduino:OK")
-                self.serial_connected["SensorArduino"]= com_port
-                com_port_found = True
-            if "StepperArduino" in port_name:
-                self.stepper_arduino_serial_writer = self.__open_serial_thread(self.writer_queue_stepper_arduino,
-                                                                               self.reader_queue, com_port, 4800)
-                self.writer_queue_stepper_arduino.append("stepper_arduino:OK")
-                self.serial_connected["StepperArduino"]= com_port
-                com_port_found = True
-        return com_port_found
-=======
         com_ports_list = self.find_com_ports()
         for com_port, port_name in com_ports_list.items():
             if 'IMU' in port_name:
@@ -117,7 +77,6 @@ class SerialHandler(Thread):
                 self.writer_queue_stepper_arduino.append('stepper_arduino:OK')
                 self.serial_connected.append('StepperArduino:' + com_port)
         return True
->>>>>>> Stashed changes
 
     def __get_incomming_messages(self):
         """
@@ -126,12 +85,7 @@ class SerialHandler(Thread):
         """
         try:
             message = self.reader_queue.popleft()
-<<<<<<< Updated upstream
-            self.message_queue.append(message)
-            self.__add_sensor(message)
-=======
             self.serial_message_received_handler.handle_message_recevied(message)
->>>>>>> Stashed changes
         except IndexError:
             pass
 
@@ -157,30 +111,7 @@ class SerialHandler(Thread):
         serial_reader.start()
         return serial_reader
 
-<<<<<<< Updated upstream
-    def __add_sensor(self, message):
-        """
-        checks of message is an expected on, and if, it adds the message/sensor to the list of sensors.
-        If the sensor is already in the list it updates it's value.
-        :param message:
-        """
-        if ("IMU" or "sensorArduino" or "stepperArduino") in message[0]:
-            pass
-        else:
-            if message[0] == ("depth" or "pressure" or "temperature"
-            or "stepper_pos_ps" or "stepper_pos_sb" or "yaw" or "roll"
-            or "pitch" or "depth_beneath_rov") :
-                if message[0] in self.sensor_list.keys():
-                    self.sensor_list[message[0]] = message[1]
-                else:
-                    sensor = Sensor(message[0], message[1])
-                    # print('------')
-                    # print(sensor)
-                    # print('------')
-                    self.sensor_list[message[0]] = sensor
-=======
 
->>>>>>> Stashed changes
 
 
 if __name__ == '__main__':

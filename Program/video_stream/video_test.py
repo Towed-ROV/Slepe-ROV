@@ -1,9 +1,9 @@
 from threading import Event
-from video_stream.video_server import VideoServer
+from video_server import VideoServer
 
 stream_mode = Event()
 
-vs = VideoServer("localhost", 1337, stream_mode)
+vs = VideoServer("192.168.0.102", 1337, stream_mode)
 vs.start()
 
 # STOP = stream_mode.set()

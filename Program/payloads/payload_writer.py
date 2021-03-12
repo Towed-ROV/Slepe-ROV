@@ -21,12 +21,7 @@ class PayloadWriter(Thread):
                 self.__merge_sensor_payload()
                 self.__add_commands_to_queue()
             except (Exception) as e:
-<<<<<<< Updated upstream
-                print(e,"payload writer")
-
-=======
                 pass
->>>>>>> Stashed changes
 
     def __merge_sensor_payload(self):
         """
@@ -42,15 +37,15 @@ class PayloadWriter(Thread):
             
                 sensors.append({"name" : sensor_name,
                                 "value" : sensor_value})
-            print(sensors)   
+#                 print(type(sensor_value))   
     #         for sensor_name, sensor_value in self.sensor_list.items():
                 
-    #             sensors.append('%s:%s'%sensor_name, sensor_value)
-            json_sensor = json.dumps(sensors)
+#     #             sensors.append('%s:%s'%sensor_name, sensor_value)
+#             json_sensor = json.dumps(sensors)
             time.sleep(0.05)
             sensor_structure = {
                 "payload_name": "sensor_data",
-                "payload_data": json_sensor
+                "payload_data": sensors
             }
             
     #         print('-----------')
@@ -59,12 +54,6 @@ class PayloadWriter(Thread):
 
             self.message_queue.append(sensor_structure)
 
-<<<<<<< Updated upstream
-        self.message_queue.append(sensor_structure)
-    def __add_commands_to_queue(self):
-        pass
-if __name__ == "__main__":
-=======
     def __add_commands_to_queue(self):
         try:
             message = self.gui_command_queue.popleft()
@@ -78,7 +67,6 @@ if __name__ == "__main__":
             pass
 
 if __name__ == '__main__':
->>>>>>> Stashed changes
     sensor_list = {}
     sensor_list["test"] = 10
     sensor_list["test2"] = 123
