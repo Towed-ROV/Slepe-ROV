@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 from Program.sensor import Sensor
+=======
+from sensor import Sensor
+>>>>>>> Stashed changes
 class SerialMessageRecivedHandler:
     def __init__(self, gui_command_queue, sensor_list, valid_sensor_list):
         self.message_received_queue = gui_command_queue
@@ -8,12 +12,23 @@ class SerialMessageRecivedHandler:
 
 
     def handle_message_recevied(self, received_message):
+<<<<<<< Updated upstream
         message = received_message.split(':',1)
         if message[0] in  self.valid_commands:
             self.message_received_queue.append(received_message)
         else:
             self.__add_sensor(message)
 
+=======
+        try: 
+            message = received_message.split(':',1)
+            if message[0] in  self.valid_commands:
+                self.message_received_queue.append(received_message)
+            else:
+                self.__add_sensor(message)
+        except Exception as e:
+            print(received_message, "typeerrpr")
+>>>>>>> Stashed changes
     def __add_sensor(self, message):
         """
         checks of message is an expected on, and if, it adds the message/sensor to the list of sensors.

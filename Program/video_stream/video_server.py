@@ -21,13 +21,22 @@ class VideoServer(Thread):
             video_client.join()
         
     def run(self):
+<<<<<<< Updated upstream
         self.log.warning("Server is running")
+=======
+        self.log.warning('Server is running')
+>>>>>>> Stashed changes
         try: 
             while not self.video_server_exit_flag.is_set():
-                self.log.warning("Ready for new connection")
+                self.log.warning('Ready for new connection')
                 client_socket, address_info = self.welcome_socket.accept()
+<<<<<<< Updated upstream
                 self.log.warning("Connection from: " + str(address_info))
                 # self.log.warning("Connection from: ", self.video_client)
+=======
+                self.log.warning('Connection from: ' + str(address_info))
+                # self.log.warning('Connection from: ', self.video_client)
+>>>>>>> Stashed changes
                 video_client_handler = VideoClientHandler(client_socket, address_info)
                 video_client_handler.add_logger(self.log)
                 video_client_handler.add_streaming_flag(self._video_client_exit_flag)
@@ -38,7 +47,7 @@ class VideoServer(Thread):
             self.log.error(e)
         finally:
             self._stop_video_clients()
-            self.log.warning("Server shutdown")
+            self.log.warning('Server shutdown')
 
     def _stop_streaming(self):
         self._video_client_exit_flag.clear()
