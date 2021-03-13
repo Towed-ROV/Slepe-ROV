@@ -11,12 +11,17 @@ class SerialWriterReader(Thread):
         self.serial_port = serial.Serial(self.com_port, self.baud_rate, timeout=0,
                                          stopbits=1, bytesize=8)
         self.last_output = ''
+        self.stop = False
 
     def run(self):
-        while True:
+        while not False:
             try:
-                self.input_queue.append(self.__read_incomming_data())
-                self.__write_serial_data(self.output_queue.popleft())
+                incomming_message = self.__read_incomming_data()
+                if incomming_message:
+                    self.input_queue.append(incomming_message)
+                test = self.output_queue.popleft()
+                self.__write_serial_data(test)
+                
             except (Exception) as e:
                 pass
 
@@ -26,19 +31,16 @@ class SerialWriterReader(Thread):
         :param message: message to send to serial
         """
         if self.serial_port.isOpen():
-            output = "<" + message + ">"
-            print(message)
-            if output != "self.last_output":
+            output = '<' + message + '>'
+            if output != 'self.last_output':
 
                 try:
-                    out = output.encode('utf-8')
-                    print("shit")
-                    print(out)
-                    self.serial_port.write(out)
+                    output = output.encode()
+                    self.serial_port.write(output)
+                    time.sleep(0.05)
                     self.last_output = output
-                    self.serial_port.close()
                 except (Exception) as e:
-                    print(e, "serial writer")
+                    print(e, 'serial writer')
         else:
             self.serial_port.open()
             print('Serial port not open : ' + str(self.com_port))
@@ -52,19 +54,17 @@ class SerialWriterReader(Thread):
         start_char = '<'
         end_char = '>'
         seperation_char = ':'
-        message_received = ""
-
-        if(not self.serial_port.is_open):
-            try:
-                self.serial_port.open()
-            except(Exception) as e:
-                print(e, "serial reader")
-        while True:
-            time.sleep(0.05)
+        message_received = ''
+        try:
             message_received = self.serial_port.readline()
             message_received = message_received.strip()
-            if message_received:
-                print(message_received)
-                message_received = message_received.decode().strip(start_char).strip(end_char).split(seperation_char)
-                break
-        return message_received
+            message_received = message_received.decode('utf-8').strip(start_char).strip(end_char)
+            return message_received
+        except (Exception) as e:
+            pass
+        
+    def stop_thread(self):
+        self.stop = True
+        self.serial_port.close()
+        print('closed port', self.serial_port.isOpen())
+        

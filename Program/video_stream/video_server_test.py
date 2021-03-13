@@ -1,9 +1,9 @@
 from threading import Event
-from video_server import VideoServer
+from video_stream.video_server import VideoServer
 
 stream_mode = Event()
 
-vs = VideoServer("192.168.0.102", 1337, stream_mode)
+vs = VideoServer("0.0.0.0", 1337, stream_mode)
 vs.start()
 
 # STOP = stream_mode.set()
@@ -11,11 +11,7 @@ vs.start()
 
 running = True
 while running:
-    # Block-free loop
-    
     # DO STUFF HERE 
-    
-    
     cmd = input("Type: ")
     if cmd == "quit":
         stream_mode.set()
