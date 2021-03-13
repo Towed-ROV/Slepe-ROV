@@ -30,6 +30,6 @@ class CommandReceiver(Thread):
             try:
                 cmd = self.recv()
                 self.cmd_queue.append(cmd)
-                self.send({"succes" : true})
+                self.send({"succese" : True})
             except (Exception) as e:
                 pass

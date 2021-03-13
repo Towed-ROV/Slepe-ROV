@@ -33,9 +33,7 @@ class SerialFinder:
                                                 stopbits=1, bytesize=8)
                     try:
                         sleep(2)
-                        print('check this fukkeer')
                         message_received = serial_port.readline()
-                        print(message_received)
                         if message_received:
                             message_received = message_received.strip().decode().split(self.seperation_char)
                             port_name = message_received[0].replace('<', '')

@@ -2,7 +2,7 @@ from payloads.payload_writer import PayloadWriter
 from payloads.payload_handler import PayloadHandler
 from Serial_communication.serial_handler import SerialHandler
 from collections import deque
-from threading import Event
+from multiprocessing import Event
 from video_stream.video_server import VideoServer
 
 arduino_command_queue = deque()
@@ -16,13 +16,14 @@ payload_handler.daemon = True
 payload_handler.start()
 
 
-#video stream
+
+
 stream_mode = Event()
 vs = VideoServer('192.168.0.102', 1337, stream_mode)
 vs.start()
 
 def start_stop_video_stream():
-    try: 
+    try:
         command_data = arduino_command_queue.popleft()
         arduino_command_queue.appendleft(command_data)
         command_data = command_data.split(':',1)
@@ -53,10 +54,10 @@ def __stop_threads():
 while True:
     try:
         if payload_handler.start_rov != 0:
-            start_stop_video_stream()
+#             start_stop_video_stream()
             if payload_handler.start_rov == 1 and not(payload_writer.is_alive() or serial_handler.is_alive()):
                 print('starting threads')
-                __start_communication_threads()
+                # __start_communication_threads()
             else:
                 __stop_threads()
     except (Exception) as e:

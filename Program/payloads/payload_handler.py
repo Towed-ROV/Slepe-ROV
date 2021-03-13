@@ -48,12 +48,9 @@ class PayloadHandler(Thread):
         """
         try:
             payload_type, payload_names, payload_data = self.payload_reader.read_payload(self.message_queue.popleft())
-            print(payload_type)
-            print(payload_names)
-            print(payload_data)
             if payload_type == 'commands':
                 if payload_data[0] in self.commands_to_serial:
-                    self.command_queue.append(payload_data[0] + ':' + payload_data[1])
+                    self.command_queue.append(str(payload_data[0]) + ':' + str(payload_data[1]))
                 elif payload_data[0] == 'start_system':
                     self.start_rov = payload_data[1]
                 elif payload_data[0] == 'light_on_off':

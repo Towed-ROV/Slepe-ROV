@@ -20,7 +20,6 @@ class SerialWriterReader(Thread):
                 if incomming_message:
                     self.input_queue.append(incomming_message)
                 test = self.output_queue.popleft()
-                print(test)
                 self.__write_serial_data(test)
                 
             except (Exception) as e:
@@ -31,16 +30,12 @@ class SerialWriterReader(Thread):
         write message to serial port
         :param message: message to send to serial
         """
-        print('pikk')
         if self.serial_port.isOpen():
             output = '<' + message + '>'
-            print(message)
             if output != 'self.last_output':
 
                 try:
-                    print('shit')
                     output = output.encode()
-                    print(output)
                     self.serial_port.write(output)
                     time.sleep(0.05)
                     self.last_output = output

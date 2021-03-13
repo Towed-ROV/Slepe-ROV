@@ -14,7 +14,6 @@ class MessageReceiver(Thread):
     def run(self):
         while True:
             try:
-                print('run')
                 self.subscribe()
             except zmq.ZMQError:
                 print('could not receive data')
@@ -28,7 +27,6 @@ class MessageReceiver(Thread):
         received_data = self.socket.recv_json()
         self.queue.append(received_data)
         test = self.queue.popleft()
-        print(test)
         self.queue.append(test)
 
     def connect(self):

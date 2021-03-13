@@ -19,7 +19,6 @@ class PayloadWriter(Thread):
             try:
                 self.__add_commands_to_queue()
                 self.__merge_sensor_payload()
-                self.__add_commands_to_queue()
             except (Exception) as e:
                 pass
 
@@ -57,12 +56,19 @@ class PayloadWriter(Thread):
     def __add_commands_to_queue(self):
         try:
             message = self.gui_command_queue.popleft()
-            json_command = json.dumps(message)
+            message = message.split(":",1)
+            if message[1] == "True":
+                message[1] = True
+            elif message[1] == "False":
+                message[1] = False
+            json_command = [{"name" : message[0],
+                        "success" : message[1]}]
             command_structure = {
-                "payload_name": "commands",
+                "payload_name": "response",
                 "payload_data": json_command
             }
             self.message_queue.append(command_structure)
+            print("appended")
         except (Exception) as e:
             pass
 

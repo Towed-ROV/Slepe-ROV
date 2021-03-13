@@ -14,8 +14,10 @@ class MessageDispatcher(Thread):
     def run(self):
         while True:
             try:
-                sleep(0.5)
+                sleep(0.1)
+                
                 self.publish()
+                
             except (Exception) as e:
                 pass
 

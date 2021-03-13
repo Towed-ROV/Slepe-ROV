@@ -18,7 +18,7 @@ class SerialHandler(Thread):
         self.writer_queue_IMU = deque()
         self.writer_queue_sensor_arduino = deque()
         self.writer_queue_stepper_arduino = deque()
-        self.gui_command_queue = deque()
+        self.gui_command_queue = gui_command_queue
         self.serial_connected = []
         self.com_port_found = False
         self.valid_sensor_list = ['depth', 'pressure', 'temperature',
