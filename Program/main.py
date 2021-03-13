@@ -1,9 +1,9 @@
-from Program.payloads.payload_writer import PayloadWriter
-from Program.payloads.payload_handler import PayloadHandler
-from Program.Serial_communication.serial_handler import SerialHandler
+from payloads.payload_writer import PayloadWriter
+from payloads.payload_handler import PayloadHandler
+from Serial_communication.serial_handler import SerialHandler
 from collections import deque
 from threading import Event
-from Program.video_stream.video_server import VideoServer
+from video_stream.video_server import VideoServer
 
 arduino_command_queue = deque()
 sensor_list = {}
