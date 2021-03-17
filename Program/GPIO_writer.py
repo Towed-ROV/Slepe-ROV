@@ -21,7 +21,7 @@ class GPIOWriter:
         in_max = 100
         PWM = self.__map(brightness, in_max, in_min, out_max, out_min)
         self.lights.set_PWM_frequency(self.pin_led_lights, PWM)
-
+        return True
     def adjust_camera(self, pitch):
         """
         adjust the pitch of the camera according to pitch of rov, so camera is always horizontal.
@@ -54,5 +54,6 @@ class GPIOWriter:
         :param offset: the given offset
         """
         self.camera_tilt_offset = offset
+        return True
 if __name__ == '__main__':
     gpi = GPIOWriter()

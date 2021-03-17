@@ -7,61 +7,39 @@ class HandleWriterQueue:
         self.writer_queue_sensor_arduino = writer_queue_sensor_arduino
         self.writer_queue_stepper_arduino = writer_queue_stepper_arduino
 
+        self.arduino_stepper_commands = {'arduino_stepper', 'auto_mode', 'reset', 'set_point_depth'
+                               'pid_depth_p', 'pid_depth_i', 'pid_depth_d', 'pid_roll_p',
+                               'pid_roll_i', 'pid_roll_d', 'manual_wing_pos_up', 'manual_wing_pos_down',
+                               'emergency_surface', 'depth', 'roll'}
+        self.arduino_sensor_commands = {'arduino_sensor', 'depth_beneath_rov_offset', 'depth_rov_offset'}
+
     def put_in_writer_queue(self):
         """
         sort message from serial writer queue to the specific writer queue.
         :return: a bool if com port need to be search after.
         """
-#todo fiks opp her, dict
+
         try:
-            pitch = self.reader_queue.popleft()
-            self.reader_queue.appendleft(pitch)
-            for check_pitch in pitch:
-                check_pitch = check_pitch.split(':')
-                if check_pitch[0] == "pitch":
-                    self.__append_stepper_arduino_writer_queue(pitch)
+            from_arduino_to_arduino = self.reader_queue.popleft()
+            self.reader_queue.appendleft(from_arduino_to_arduino)
+            for sensor in from_arduino_to_arduino:
+                sensor = sensor.split(':')
+                if sensor[0] == 'roll':
+                    self.__append_stepper_arduino_writer_queue(sensor)
+                elif sensor[0] == 'depth':
+                    self.__append_stepper_arduino_writer_queue(sensor)
             message = self.writer_queue.popleft()
             item = message.split(':',1)
-            if item[0] == 'com_port_search':
+            if item[0] in self.arduino_sensor_commands:
+                self.__append_sensor_arduino_writer_queue(message)
+            elif item[0] in self.arduino_stepper_commands:
+                self.__append_stepper_arduino_writer_queue(message)
+            elif item[0] == 'com_port_search':
                 return False
-            if item[0] == "reset":
-                self.__append_sensor_arduino_writer_queue(message)
-                print("append")
-            if item[0] == "target_distance":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "pid_depth_p":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "pid_depth_i":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "pid_depth_d":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "pid_trim_p":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "pid_trim_i":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "pid_trim_d":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "pid_seafloor_p":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "pid_seafloor_i":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "pid_seafloor_d":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "emergency_surface":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "target_mode":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "depth_beneath_rov_offset":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "rov_depth_offset":
-                self.__append_stepper_arduino_writer_queue(message)
-            if item[0] == "arduino sensor":
-                self.__append_sensor_arduino_writer_queue(message)
-            if item[0] == "arduino stepper":
-                self.__append_stepper_arduino_writer_queue(message)
         except IndexError:
             pass
         return True
+
     def __append_imu_writer_queue(self, message):
         self.writer_queue_IMU.append(message)
 

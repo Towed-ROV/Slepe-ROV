@@ -12,7 +12,7 @@ gui_command_queue = deque()
 #starting threads
 payload_writer = PayloadWriter(sensor_list, gui_command_queue)
 serial_handler = SerialHandler(sensor_list, arduino_command_queue, gui_command_queue)
-payload_handler = PayloadHandler(sensor_list, arduino_command_queue)
+payload_handler = PayloadHandler(sensor_list, arduino_command_queue, gui_command_queue)
 payload_handler.daemon = True
 payload_handler.start()
 
@@ -55,10 +55,10 @@ def __stop_threads():
 while True:
     try:
         if payload_handler.start_rov != 0:
-#             start_stop_video_stream()
+            start_stop_video_stream()
             if payload_handler.start_rov == 1 and not(payload_writer.is_alive() or serial_handler.is_alive()):
                 print('starting threads')
-                # __start_communication_threads()
+                __start_communication_threads()
             else:
                 __stop_threads()
     except (Exception) as e:

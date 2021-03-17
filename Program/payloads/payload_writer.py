@@ -67,7 +67,7 @@ class PayloadWriter(Thread):
                 "payload_name": "response",
                 "payload_data": json_command
             }
-            self.message_queue.append(command_structure)
+            self.message_queue.appendleft(command_structure)
             print("appended")
         except (Exception) as e:
             pass

@@ -7,8 +7,8 @@ class SerialMessageRecivedHandler:
         self.valid_commands = ['reset', 'IMU', 'SensorArduino', 'StepperArduino',
                                'depth_beneath_rov_offset', 'depth_rov_offset', 'pid_depth_p',
                                'pid_depth_i', 'pid_depth_d', 'pid_roll_p', 'pid_roll_i', 'pid_roll_d',
-                               'auto_mode', 'manual_wing_pos_up', 'manual_wing_pos_down', 'set_point',
-                               'emergency_surface'
+                               'auto_mode', 'manual_wing_pos_up', 'manual_wing_pos_down', 'set_point_depth',
+                               'emergency_surface', 'water_temp', 'pressure' 'depth', 'depth_beneath_rov'
                                ]
 
     def handle_message_recevied(self, received_message):
