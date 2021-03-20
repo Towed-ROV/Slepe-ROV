@@ -7,11 +7,11 @@ class HandleWriterQueue:
         self.writer_queue_sensor_arduino = writer_queue_sensor_arduino
         self.writer_queue_stepper_arduino = writer_queue_stepper_arduino
 
-        self.arduino_stepper_commands = {'arduino_stepper', 'auto_mode', 'reset', 'set_point_depth'
+        self.arduino_stepper_commands = ['arduino_stepper', 'auto_mode', 'reset', 'set_point_depth',
                                'pid_depth_p', 'pid_depth_i', 'pid_depth_d', 'pid_roll_p',
-                               'pid_roll_i', 'pid_roll_d', 'manual_wing_pos_up', 'manual_wing_pos_down',
-                               'emergency_surface', 'depth', 'roll'}
-        self.arduino_sensor_commands = {'arduino_sensor', 'depth_beneath_rov_offset', 'depth_rov_offset'}
+                               'pid_roll_i', 'pid_roll_d', 'manual_wing_pos',
+                               'emergency_surface', 'depth', 'roll']
+        self.arduino_sensor_commands = ['arduino_sensor', 'depth_beneath_rov_offset', 'depth_rov_offset']
 
     def put_in_writer_queue(self):
         """
@@ -20,14 +20,20 @@ class HandleWriterQueue:
         """
 
         try:
+            
             from_arduino_to_arduino = self.reader_queue.popleft()
+            print(from_arduino_to_arduino)
             self.reader_queue.appendleft(from_arduino_to_arduino)
-            for sensor in from_arduino_to_arduino:
-                sensor = sensor.split(':')
-                if sensor[0] == 'roll':
-                    self.__append_stepper_arduino_writer_queue(sensor)
-                elif sensor[0] == 'depth':
-                    self.__append_stepper_arduino_writer_queue(sensor)
+            
+            sensor = from_arduino_to_arduino.split(':')
+            if sensor[0] == 'sestf':
+                self.__append_stepper_arduino_writer_queue(from_arduino_to_arduino)
+            elif sensor[0] == 'depth':
+                print('appended to stepper queue')
+                self.__append_stepper_arduino_writer_queue(from_arduino_to_arduino)
+        except IndexError:
+            pass
+        try:
             message = self.writer_queue.popleft()
             item = message.split(':',1)
             if item[0] in self.arduino_sensor_commands:
@@ -36,6 +42,8 @@ class HandleWriterQueue:
                 self.__append_stepper_arduino_writer_queue(message)
             elif item[0] == 'com_port_search':
                 return False
+            else:
+                print("fsdfds!")
         except IndexError:
             pass
         return True

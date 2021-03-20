@@ -7,8 +7,8 @@ class SerialMessageRecivedHandler:
         self.valid_commands = ['reset', 'IMU', 'SensorArduino', 'StepperArduino',
                                'depth_beneath_rov_offset', 'depth_rov_offset', 'pid_depth_p',
                                'pid_depth_i', 'pid_depth_d', 'pid_roll_p', 'pid_roll_i', 'pid_roll_d',
-                               'auto_mode', 'manual_wing_pos_up', 'manual_wing_pos_down', 'set_point_depth',
-                               'emergency_surface', 'water_temp', 'pressure' 'depth', 'depth_beneath_rov'
+                               'auto_mode', 'manual_wing_pos', 'set_point_depth',
+                               'emergency_surface'
                                ]
 
     def handle_message_recevied(self, received_message):
@@ -19,6 +19,8 @@ class SerialMessageRecivedHandler:
                 self.message_received_queue.append(received_message)
             else:
                 self.__add_sensor(message)
+        except IndexError:
+            pass
         except Exception as e:
             print(received_message, "error: ", e)
 
@@ -32,12 +34,14 @@ class SerialMessageRecivedHandler:
         if ('IMU' or 'sensorArduino' or 'stepperArduino') in message[0]:
             pass
         else:
-            if message[0] in self.valid_sensor_list:
-                if message[0] in self.sensor_list.keys():
-                    self.sensor_list[message[0]] = float(message[1])
+            name = message[0]
+            value = message[1]
+            if name in self.valid_sensor_list:
+                if name in self.sensor_list.keys():
+                    self.sensor_list[name] = float(value)
                 else:
-                    sensor = Sensor(message[0], float(message[1]))
+                    sensor = Sensor(name, float(value))
                     # print('------')
                     # print(sensor)
                     # print('------')
-                    self.sensor_list[message[0]] = sensor
+                    self.sensor_list[name] = float(value)

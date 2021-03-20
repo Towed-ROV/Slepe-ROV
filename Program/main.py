@@ -54,9 +54,9 @@ def __stop_threads():
 
 while True:
     try:
-        if payload_handler.start_rov != 0:
+        if payload_handler.start_rov != False:
             start_stop_video_stream()
-            if payload_handler.start_rov == 1 and not(payload_writer.is_alive() or serial_handler.is_alive()):
+            if payload_handler.start_rov == True and not(payload_writer.is_alive() or serial_handler.is_alive()):
                 print('starting threads')
                 __start_communication_threads()
             else:

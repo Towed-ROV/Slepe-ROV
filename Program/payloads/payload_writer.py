@@ -12,14 +12,18 @@ class PayloadWriter(Thread):
         self.message_dispatcher = MessageDispatcher(self.message_queue)
         self.message_dispatcher.daemon = True
         self.message_dispatcher.start()
+        self.interval = 0.5
 
     def run(self):
-        time.sleep(10)
+        previousMillis = 0
         while True:
-            try:
+            try:                    
                 self.__add_commands_to_queue()
-                self.__merge_sensor_payload()
-            except (Exception) as e:
+                currentMillis  = time.monotonic()
+                if currentMillis - previousMillis >= self.interval:
+                    self.__merge_sensor_payload()
+                    previousMillis = currentMillis
+            except IndexError:
                 pass
 
     def __merge_sensor_payload(self):
@@ -41,7 +45,7 @@ class PayloadWriter(Thread):
                 
 #     #             sensors.append('%s:%s'%sensor_name, sensor_value)
 #             json_sensor = json.dumps(sensors)
-            time.sleep(0.05)
+            time.sleep(0.001)
             sensor_structure = {
                 "payload_name": "sensor_data",
                 "payload_data": sensors
@@ -68,8 +72,8 @@ class PayloadWriter(Thread):
                 "payload_data": json_command
             }
             self.message_queue.appendleft(command_structure)
-            print("appended")
-        except (Exception) as e:
+            print("append")
+        except IndexError:
             pass
 
 if __name__ == '__main__':

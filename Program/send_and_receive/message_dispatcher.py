@@ -14,7 +14,6 @@ class MessageDispatcher(Thread):
     def run(self):
         while True:
             try:
-                sleep(0.1)
                 
                 self.publish()
                 
@@ -23,7 +22,7 @@ class MessageDispatcher(Thread):
 
     def publish(self):
         test = self.data_queue.popleft()
-        print(test)
+#         print(test, 'dsad')
         self.socket.send_json(test)
         
     def disconnect(self):

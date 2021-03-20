@@ -22,7 +22,9 @@ class CommandReceiver(Thread):
         self.connection.send_json(data)
 
     def recv(self):
-        return self.connection.recv_json()
+        test =  self.connection.recv_json()
+        print(test)
+        return test
 
     def run(self):
         self.bind()

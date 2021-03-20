@@ -1,7 +1,7 @@
 from send_and_receive.message_receiver import MessageReceiver
 from send_and_receive.command_receiver import CommandReceiver
 from payloads.payload_reader import PayloadReader
-# from Program.GPIO_writer import GPIOWriter
+from GPIO_writer import GPIOWriter
 from collections import deque
 import json
 from threading import Thread
@@ -26,22 +26,20 @@ class PayloadHandler(Thread):
         self.command_receiver.start()
         self.gui_command_queue = gui_command_queue
         self.command_queue = command_queue
-        # self.gpio_writer = GPIOWriter()
+        self.gpio_writer = GPIOWriter()
         self.payload_reader = PayloadReader()
         self.start_rov = 1
-        self.depth_or_seafloor = False # dont know where to send yet, due to the seafloor tracking not implemented.
-        self.commands_to_serial = {'com_port_search', 'reset', 'pid_depth_p', 'pid_depth_i',
+        self.depth_or_seafloor = "" # dont know where to send yet, due to the seafloor tracking not implemented.
+        self.commands_to_serial = ['com_port_search', 'reset', 'pid_depth_p', 'pid_depth_i',
                                    'pid_depth_d', 'pid_roll_p','pid_roll_i', 'pid_roll_d',
-                                   'manual_wing_pos_up', 'manual_wing_pos_down', 'emergency_surface',
-                                   'depth_beneath_rov_offset', 'depth_rov_offset', 'set_point_depth', 'auto_mode'}
+                                    'manual_wing_pos', 'emergency_surface',
+                                   'depth_beneath_rov_offset', 'depth_rov_offset', 'set_point_depth', 'auto_mode']
 
     def run(self):
         while True:
-            try:
-                self.__update_pitch()
-                self.__sort_payload()
-            except (Exception) as e:
-                print(e, 'payload handler')
+            self.__update_pitch()
+            self.__sort_payload()
+                
 
     def __sort_payload(self):
         """
@@ -54,13 +52,12 @@ class PayloadHandler(Thread):
                     self.command_queue.append(str(payload_data[0]) + ':' + str(payload_data[1]))
                 elif payload_data[0] == 'start_system':
                     self.start_rov = payload_data[1]
-                    self.gui_command_queue.append(payload_data[0] + ':' + True)
-                elif payload_data[0] == 'light_on_off':
-                    pass
-                    # if self.gpio_writer.set_lights(payload_data[1]):
-                    #     self.gui_command_queue.append(payload_data[0] + ':' + True)
-                    # else
-                    #     self.gui_command_queue.append(payload_data[0] + ':' + False)
+                    self.gui_command_queue.append(str(payload_data[0]) + ':' + str(payload_data[1]))
+                    print(payload_data[0])
+                    print(str(payload_data[0]))
+                elif payload_data[0] == 'lights_on_off':
+                    if self.gpio_writer.set_lights(100):
+                        self.gui_command_queue.append(payload_data[0] + ':' + str(True))
                 elif payload_data[0] == 'camera_offset_angle':
                     pass
                     # if self.gpio_writer.set_manual_offset_camera_tilt(payload_data[1]):
@@ -68,8 +65,12 @@ class PayloadHandler(Thread):
                     # else
                     #     self.gui_command_queue.append(payload_data[0] + ':' + False)
                 elif payload_data[0] == 'depth_or_seafloor':
+                    print('kai1')
                     self.depth_or_seafloor = payload_data[1]
-                    self.gui_command_queue.append(payload_data[0] + ':' + True)
+
+                    self.gui_command_queue.append(payload_data[0] + ':' + str(True))
+                    print('kai1')
+
             if payload_type == 'settings':
                 if payload_data[0] == 'arduino sensor':
                     self.command_queue.append('arduino_sensor:' + payload_data[1] + ':' + payload_data[2])
@@ -84,12 +85,14 @@ class PayloadHandler(Thread):
         reads the value of the pitch sensor and send this to the camera servo,
         so it can adjust its angle according to pitch
         """
-        for sensor in self.sensor_list:
-            sensor = sensor.split(':', 1)
-            if sensor[0].strip() == 'pitch':
-                # self.gpio_writer.adjust_camera(sensor[1].strip())
-                pass
-
+        try:
+            for sensor in self.sensor_list:
+                sensor = sensor.split(':', 1)
+                if sensor[0].strip() == 'pitch':
+                    # self.gpio_writer.adjust_camera(sensor[1].strip())
+                    pass
+        except RuntimeError:
+            pass
 
 if __name__ == '__main__':
     sensor_list = []
