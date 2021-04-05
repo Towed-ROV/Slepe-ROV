@@ -3,7 +3,7 @@ import json
 import time
 context = zmq.Context()
 socket = context.socket(zmq.PUB)
-socket.bind("tcp://192.168.0.20:8765")
+socket.bind("tcp://10.0.0.54:8765")
 
 
 
@@ -20,7 +20,7 @@ while True:
         json_sensor = json.dumps(dict)
         time.sleep(0.05)
         sensor_structure = {
-            "payload_name": "commands",
+            "payload_name": "setting",
             "payload_data": json_sensor
         }
         print(sensor_structure)

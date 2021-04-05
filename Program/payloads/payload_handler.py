@@ -1,97 +1,97 @@
 from send_and_receive.message_receiver import MessageReceiver
-from GPIO_writer import GPIOWriter
-from collections import deque
+from send_and_receive.command_receiver import CommandReceiver
+from payloads.payload_reader import PayloadReader
+# from GPIO_writer import GPIOWriter
+import queue
+import json
 from threading import Thread
+from multiprocessing import Queue
+
 class PayloadHandler(Thread):
-    def __init__(self, sensor_list, command_queue):
+    def __init__(self, sensor_list, command_queue, gui_command_queue):
+        """
+        Handles
+        :param sensor_list:
+        :param command_queue:
+        """
         Thread.__init__(self)
         self.sensor_list = sensor_list
-        self.received_data = ""
-        self.message_queue = deque()
+        self.received_data = ''
+        self.message_queue = Queue()
         self.message_receiver = MessageReceiver(self.message_queue)
         self.message_receiver.daemon = True
         self.message_receiver.start()
+        self.command_receiver = CommandReceiver(self.message_queue)
+        self.command_receiver.daemon = True
+        self.command_receiver.start()
+        self.gui_command_queue = gui_command_queue
         self.command_queue = command_queue
-        self.gpio_writer = GPIOWriter()
+        # self.gpio_writer = GPIOWriter()
+        self.payload_reader = PayloadReader()
+        self.start_rov = 1
+        self.depth_or_seafloor = "" # dont know where to send yet, due to the seafloor tracking not implemented.
+        self.commands_to_serial = ['com_port_search', 'reset', 'pid_depth_p', 'pid_depth_i',
+                                   'pid_depth_d', 'pid_roll_p','pid_roll_i', 'pid_roll_d',
+                                    'manual_wing_pos', 'emergency_surface',
+                                   'depth_beneath_rov_offset', 'depth_rov_offset', 'set_point_depth', 'auto_mode']
 
     def run(self):
         while True:
-            try:
-                self.__handle_payload()
-                # self.__update_pitch()
-            except (Exception) as e:
-                print(e, "payload handler")
-
-    def __handle_payload(self):
-        try:
-            data_type, data = self.__payload_reader(self.message_queue.popleft())
-            if data_type == 'commands':
-                command_name = data.split(':',1)[0].replace('{','').replace('"',"").strip()
-                command_data = data.split(':',1)[1].replace('}','').replace('"',"").strip()
-                print(command_name)
-                print(command_data)
+            self.__update_pitch()
+            self.__sort_payload()
                 
-                if command_name == 'reset':
-                    self.command_queue.append("reset:" + command_data)
-                    print('tet')
-                if command_name == 'light_on_off':
-                    self.gpio_writer.set_lights(command_data)
-                if command_name == 'manual_camera_tilt_offset':
-                    self.gpio_writer.set_manual_offset_camera_tilt(command_data)
-                if command_name == 'target_distance':
-                    self.command_queue.append("target_distance:" + command_data)
-                if command_name == 'pid_depth_p':
-                    self.command_queue.append("pid_depth_p:" + command_data)
-                if command_name == 'pid_depth_i':
-                    self.command_queue.append("pid_depth_i:" + command_data)
-                if command_name == 'pid_depth_d':
-                    self.command_queue.append("pid_depth_d:" + command_data)
-                if command_name == 'pid_trim_p':
-                    self.command_queue.append("pid_trim_p:" + command_data)
-                if command_name == 'pid_trim_i':
-                    self.command_queue.append("pid_trim_i:" + command_data)
-                if command_name == 'pid_trim_d':
-                    self.command_queue.append("pid_trim_d:" + command_data)
-                if command_name == 'emergency_surface':
-                    self.command_queue.append("emergency_surface:" + command_data)
-                if command_name == 'target_mode':
-                    self.command_queue.append("target_mode:" + command_data)
-                if command_name == 'com_port_search':
-                    self.command_queue.append("com_port_search:" + command_data)
-                if command_name == 'camera_zero_point':
-                    self.command_queue.append("camera_zero_point:" + command_data)
-                if command_name == 'depth_beneath_rov_offset':
-                    self.command_queue.append("depth_beneath_rov_offset:" + command_data)
-                if command_name == 'rov_depth_offset':
-                    self.command_queue.append("rov_depth_offset:" + command_data)
-        except (IndexError) as e:
+
+    def __sort_payload(self):
+        """
+        takes the received payload and reads it and either handles it or forwards it to the serial output queue
+        """
+        try:
+            payload_type, payload_names, payload_data = self.payload_reader.read_payload(self.message_queue.get_nowait())
+            if payload_type == 'commands':
+                if payload_data[0] in self.commands_to_serial:
+                    self.command_queue.put(str(payload_data[0]) + ':' + str(payload_data[1]))
+                elif payload_data[0] == 'start_system':
+                    self.start_rov = payload_data[1]
+                    self.gui_command_queue.put(str(payload_data[0]) + ':' + str(payload_data[1]))
+                    print(payload_data[0])
+                    print(str(payload_data[0]))
+                elif payload_data[0] == 'lights_on_off':
+                    pass
+                    # if self.gpio_writer.set_lights(100):
+                    #     self.gui_command_queue.put(payload_data[0] + ':' + str(True))
+                elif payload_data[0] == 'camera_offset_angle':
+                    pass
+                    # if self.gpio_writer.set_manual_offset_camera_tilt(payload_data[1]):
+                    #     self.gui_command_queue.put(payload_data[0] + ':' + str(True))
+                elif payload_data[0] == 'depth_or_seafloor':
+                    print('kai1')
+                    self.depth_or_seafloor = payload_data[1]
+
+                    self.gui_command_queue.put(payload_data[0] + ':' + str(True))
+                    print('kai1')
+
+            if payload_type == 'settings':
+                if payload_data[0] == 'arduino sensor':
+                    self.command_queue.put('arduino_sensor:' + payload_data[1] + ':' + payload_data[2])
+                if payload_data[0] == 'arduino stepper':
+                    self.command_queue.put('arduino_stepper:' + payload_data[1] + ':' + payload_data[2])
+
+        except queue.Empty:
             pass
-        
 
-    def update_pitch(self):
-        for sensor in self.sensor_list:
-            sensor = sensor.split(':',1)
-            if sensor[0].strip() == 'pitch':
-                self.gpio_writer.adjust_camera(sensor[1].strip())
+    def __update_pitch(self):
+        """
+        reads the value of the pitch sensor and send this to the camera servo,
+        so it can adjust its angle according to pitch
+        """
+        try:
+            for sensor in self.sensor_list:
+                sensor = sensor.split(':', 1)
+                if sensor[0].strip() == 'pitch':
+                    # self.gpio_writer.adjust_camera(sensor[1].strip())
+                    pass
+        except RuntimeError:
+            pass
 
-    def __payload_reader(self, received_data):
-        print(received_data['payload_data'])
-        data_type = received_data['payload_name']
-        data = received_data['payload_data']
-        return data_type, data
-
-    def set_command_list(self, command_list):
-        self.command_list = command_list
-
-    def set_received_data(self, received_data):
-        self.received_data = received_data
-
-if __name__ == "__main__":
-    sensor_list = []
-    sensor_list.append("fuck : 8")
-    queue = deque()
-    payload = PayloadHandler(sensor_list, queue)
-    payload.update_pitch()
-
-
-
+if __name__ == '__main__':
+    pass

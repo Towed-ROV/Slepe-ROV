@@ -7,7 +7,7 @@ class VideoCamera():
     This class is tailored to access and return the video captures devices frames
     """
 
-    def __init__(self, src=0, window_width=640, window_heigth=480, video_quality=75):
+    def __init__(self, src=0, window_width=640, window_heigth=480, video_quality=80):
         """Generates an instance of the video camera,
         used to access the given video caputring device,
         defaulted to cv2 standards
@@ -28,7 +28,11 @@ class VideoCamera():
         """
         Detaches the object from the creates video-capturing device
         """
+        self.close()
+        
+    def close(self):
         self.cap.release()
+        cv2.destroyAllWindows()
 
     def get_frame(self):
         """captures the frame of the video-capturing devices, and returns it
@@ -38,7 +42,6 @@ class VideoCamera():
         _, frame = self.cap.read()
         return frame
 
-    @staticmethod
     def get_frame_bytes(self):
         """ converts a numpy.ndarray into bytes
         Args:
@@ -48,17 +51,26 @@ class VideoCamera():
         """
         frame = self.get_frame()
         _, frame_buffer = cv2.imencode('.JPEG', frame)  # self.encoder_quality
-        return frame_buffer.tobytes()
+        return frame_buffer
 
 
 if __name__ == "__main__":
 
     cap = VideoCamera()
-
+    
     while True:
         frame = cap.get_frame()
         cv2.imshow("Window", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
-    cv2.destroyAllWindows()
+        
+    cap.close()
+    
+    
+    while True:
+        cmd = input("CMD: ")
+        if cmd == "q":
+            stop = True
+            break
+        
+    
