@@ -20,7 +20,11 @@ while True:
         json_sensor = json.dumps(dict)
         time.sleep(0.05)
         sensor_structure = {
+<<<<<<< HEAD
             "payload_name": "setting",
+=======
+            "payload_name": "settings",
+>>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
             "payload_data": json_sensor
         }
         print(sensor_structure)

@@ -16,6 +16,7 @@ class SerialMessageRecivedHandler:
             received_message = received_message.strip()
             message = received_message.split(':',1)
             if message[0] in  self.valid_commands:
+<<<<<<< HEAD
 #                 print("----------------------")
                 self.message_received_queue.put(received_message)
             else:
@@ -23,6 +24,15 @@ class SerialMessageRecivedHandler:
         except Exception as e:
             pass
 #             print(received_message, "error: ", e)
+=======
+                self.message_received_queue.append(received_message)
+            else:
+                self.__add_sensor(message)
+        except IndexError:
+            pass
+        except Exception as e:
+            print(received_message, "error: ", e)
+>>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
 
     def __add_sensor(self, message):
         """
@@ -36,8 +46,11 @@ class SerialMessageRecivedHandler:
         else:
             name = message[0]
             value = message[1]
+<<<<<<< HEAD
 #             if name == 'wing_pos_port':
 #                 print(message)
+=======
+>>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
             if name in self.valid_sensor_list:
                 if name in self.sensor_list.keys():
                     self.sensor_list[name] = float(value)

@@ -8,19 +8,11 @@ from video_stream.video_server import VideoServer
 command_queue = deque()
 sensor_list = {}
 message_queue = deque()
-
+start = 0
 #starting threads
-payload_handler = PayloadHandler(sensor_list, command_queue)
+payload_handler = PayloadHandler(sensor_list, command_queue, start)
 payload_handler.daemon = True
 payload_handler.start()
-
-payload_writer = PayloadWriter(sensor_list)
-payload_writer.daemon = True
-payload_writer.start()
-
-serial_handler = SerialHandler(sensor_list, command_queue)
-serial_handler.daemon = True
-serial_handler.start()
 
 #video stream
 stream_mode = Event()
@@ -40,5 +32,31 @@ def start_stop_video_stream():
     except IndexError:
         pass
 
+def __start_communication_threads():
+    try:
+        payload_writer = PayloadWriter(sensor_list)
+        payload_writer.daemon = True
+        payload_writer.start()
+
+        serial_handler = SerialHandler(sensor_list, command_queue)
+        serial_handler.daemon = True
+        serial_handler.start()
+    except (Exception) as e:
+        print(e)
+
+def __stop_threads():
+    try:
+        payload_handler.
+    except (Exception) as e:
+        print(e)
+
 while True:
-    start_stop_video_stream()
+    try:
+        if payload_handler.start != 0:
+            start_stop_video_stream()
+            if payload_handler.start == 1:
+                __start_communication_threads()
+            else:
+                __stop_threads()
+    except (Exception) as e:
+        print(e)
