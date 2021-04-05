@@ -36,8 +36,8 @@ class SerialMessageRecivedHandler:
         else:
             name = message[0]
             value = message[1]
-#             if name == 'wing_pos_port':
-#                 print(message)
+            if name == 'depth':
+                print(message)
             if name in self.valid_sensor_list:
                 if name in self.sensor_list.keys():
                     self.sensor_list[name] = float(value)
