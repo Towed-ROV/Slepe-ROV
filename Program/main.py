@@ -18,9 +18,9 @@ payload_handler.start()
 
 
 
-stream_mode = Event()
-vs = VideoServer('192.168.0.102', 1337, stream_mode)
-vs.start()
+# stream_mode = Event()
+# vs = VideoServer('192.168.0.102', 1337, stream_mode)
+# vs.start()
 # vs._allow_streaming()
 
 def __start_communication_threads():

@@ -5,7 +5,7 @@ from threading import Thread
 class MessageDispatcher(Thread):
     def __init__(self, data_queue):
         Thread.__init__(self)
-        self.ip = 'tcp://192.168.0.102:8765'
+        self.ip = 'tcp://10.0.0.54:8765'
         context = zmq.Context()
         self.socket = context.socket(zmq.PUB)
         self.connect()
