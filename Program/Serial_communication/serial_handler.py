@@ -1,9 +1,7 @@
-import threading
-
 from Serial_communication.serial1 import SerialWriterReader
 from Serial_communication.serial_finder import SerialFinder
 import queue
-from multiprocessing import Queue, Process
+from multiprocessing import Queue
 from threading import Thread
 from Serial_communication.handle_writer_queue import HandleWriterQueue
 from Serial_communication.serial_message_recived_handler import SerialMessageRecivedHandler
@@ -25,14 +23,13 @@ class SerialHandler(Thread):
         self.gui_command_queue = gui_command_queue
         self.serial_connected = []
         self.com_port_found = False
-        self.VALID_SENSOR_LIST = ['depth', 'pressure', 'temperature',
+        self.valid_sensor_list = ['depth', 'pressure', 'temperature',
                                   'wing_pos_port', 'wing_pos_sb',
                                   'yaw', 'roll', 'pitch', 'depth_beneath_rov',
                                   'velocity_vertical']
-        self.serial_message_received_handler = SerialMessageRecivedHandler(self.gui_command_queue, self.sensor_list,
-                                                                           self.VALID_SENSOR_LIST)
-        self.handle_writer_queue = HandleWriterQueue(self.reader_queue, self.writer_queue, self.writer_queue_IMU,
-                                                     self.writer_queue_sensor_arduino, self.writer_queue_stepper_arduino,
+        self.serial_message_received_handler = SerialMessageRecivedHandler(self.gui_command_queue, self.sensor_list, self.valid_sensor_list)
+        self.handle_writer_queue = HandleWriterQueue(self.reader_queue,self.writer_queue, self.writer_queue_IMU,
+                                              self.writer_queue_sensor_arduino, self.writer_queue_stepper_arduino,
                                                      self.from_arduino_to_arduino_queue)
     def run(self):
         while True:
@@ -47,7 +44,6 @@ class SerialHandler(Thread):
                 test = self.handle_writer_queue.put_in_writer_queue()
                 self.com_port_found = test
 
-#todo active threads list
     def __close_threads(self):
         try:
             self.imu_serial.stop_thread()
@@ -117,7 +113,6 @@ class SerialHandler(Thread):
         serial_reader = SerialWriterReader(output_queue, input_queue, com_port, baud_rate,self.from_arduino_to_arduino_queue)
         serial_reader.daemon = True
         serial_reader.start()
-
         return serial_reader
 
 
