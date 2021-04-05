@@ -1,26 +1,11 @@
-<<<<<<< HEAD
-from threading import Thread
-
 import serial
 import time
 import queue
-from multiprocessing import Process, Queue
-
-
-class SerialWriterReader(Thread):
-    def __init__(self, output_queue, input_queue, com_port, baud_rate, from_arduino_to_arduino_queue):
-        Thread.__init__(self)
-        self.from_arduino_to_arduino_queue = from_arduino_to_arduino_queue
-=======
-import serial
-import time
-import queue
-from collections import deque
 from multiprocessing import Process, Queue
 class SerialWriterReader(Process):
-    def __init__(self, output_queue, input_queue, com_port, baud_rate):
+    def __init__(self, output_queue, input_queue, com_port, baud_rate, from_arduino_to_arduino_queue):
         Process.__init__(self)
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
+        self.from_arduino_to_arduino_queue = from_arduino_to_arduino_queue
         self.output_queue = output_queue
         self.input_queue = input_queue
         self.com_port = com_port
@@ -34,18 +19,11 @@ class SerialWriterReader(Process):
         timeout=0)
         self.last_output = ''
         self.stop = False
-<<<<<<< HEAD
         self.from_arduino_to_arduino = ['depth','roll','pitch']
         self.counter =0
 
     def run(self):
         while not self.stop:
-=======
-
-    def run(self):
-        counter =0
-        while True:
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
             try:
                 test = self.output_queue.get_nowait()
                 self.__write_serial_data(test)
@@ -54,7 +32,6 @@ class SerialWriterReader(Process):
                 pass
             except TypeError :
                 pass
-<<<<<<< HEAD
             incomming_message = self.__read_incomming_data()
 
             if incomming_message and incomming_message != 'SensorArduino:0':
@@ -62,15 +39,6 @@ class SerialWriterReader(Process):
                 splitted_incomming_message = incomming_message.split(":",1)
                 if splitted_incomming_message[0] in self.from_arduino_to_arduino:
                     self.from_arduino_to_arduino_queue.put(incomming_message)
-=======
-                
-                
-            incomming_message = self.__read_incomming_data()
-            if incomming_message:
-                
-                
-                counter =counter +1
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
                 self.input_queue.put(incomming_message)
 
 
@@ -87,12 +55,8 @@ class SerialWriterReader(Process):
                 try:
                     output = output.encode()
                     self.serial_port.write(output)
-<<<<<<< HEAD
                     print(output, '    ', str(self.counter), '    ', self.baud_rate)
                     self.counter = self.counter +1
-=======
-                    print(output, 'k[re')
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
                     self.last_output = output
                 except (Exception) as e:
                     print(e, 'serial writer')

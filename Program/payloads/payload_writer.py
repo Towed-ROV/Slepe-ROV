@@ -8,41 +8,22 @@ class PayloadWriter(Thread):
     def __init__(self, sensor_list, gui_command_queue):
         Thread.__init__(self)
         self.sensor_list = sensor_list
-<<<<<<< HEAD
         self.message_queue = Queue()
-=======
-        self.message_queue = deque()
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
         self.gui_command_queue = gui_command_queue
         self.message_dispatcher = MessageDispatcher(self.message_queue)
         self.message_dispatcher.daemon = True
         self.message_dispatcher.start()
-<<<<<<< HEAD
         self.interval = 0.1
-=======
-        self.interval = 0.5
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
 
     def run(self):
         previousMillis = 0
         while True:
-<<<<<<< HEAD
             self.__add_commands_to_queue()
             currentMillis  = time.monotonic()
             if currentMillis - previousMillis >= self.interval:
                 self.__merge_sensor_payload()
                 previousMillis = currentMillis
 
-=======
-            try:                    
-                self.__add_commands_to_queue()
-                currentMillis  = time.monotonic()
-                if currentMillis - previousMillis >= self.interval:
-                    self.__merge_sensor_payload()
-                    previousMillis = currentMillis
-            except IndexError:
-                pass
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
 
     def __merge_sensor_payload(self):
         """
@@ -55,7 +36,6 @@ class PayloadWriter(Thread):
             for sensor_name, sensor_value in self.sensor_list.items():
                 # 
                 # sensors.append('%s:%s'%sensor_name, sensor_value)
-<<<<<<< HEAD
             
                 sensors.append({"name" : sensor_name,
                                 "value" : sensor_value})
@@ -80,31 +60,6 @@ class PayloadWriter(Thread):
         try:
             message = self.gui_command_queue.get_nowait()
             print(message)
-=======
-            
-                sensors.append({"name" : sensor_name,
-                                "value" : sensor_value})
-#                 print(type(sensor_value))   
-    #         for sensor_name, sensor_value in self.sensor_list.items():
-                
-#     #             sensors.append('%s:%s'%sensor_name, sensor_value)
-#             json_sensor = json.dumps(sensors)
-            time.sleep(0.001)
-            sensor_structure = {
-                "payload_name": "sensor_data",
-                "payload_data": sensors
-            }
-            
-    #         print('-----------')
-    #         print(sensor_structure)
-    #         print('-----------')
-
-            self.message_queue.append(sensor_structure)
-
-    def __add_commands_to_queue(self):
-        try:
-            message = self.gui_command_queue.popleft()
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
             message = message.split(":",1)
             if message[1] == "True":
                 message[1] = True
@@ -116,15 +71,10 @@ class PayloadWriter(Thread):
                 "payload_name": "response",
                 "payload_data": json_command
             }
-<<<<<<< HEAD
             self.message_queue.put(command_structure)
             print(command_structure)
         except queue.Empty:
             pass
-=======
-            self.message_queue.appendleft(command_structure)
-            print("append")
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
         except IndexError:
             pass
 

@@ -2,25 +2,15 @@ import pigpio
 class GPIOWriter:
     def __init__(self):
 
-<<<<<<< HEAD
         self.pin_led_lights = 20
         self.pin_camera_tilt = 12
-=======
-        self.pin_led_lights = 12
-        self.pin_camera_tilt = 21
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
         self.camera_tilt_offset = 0
         self.lights = pigpio.pi()
         self.lights.set_mode(self.pin_led_lights, pigpio.OUTPUT)
         self.camera_tilt = pigpio.pi()
         self.camera_tilt.set_mode(self.pin_camera_tilt, pigpio.OUTPUT)
-<<<<<<< HEAD
         self.adjust_camera(0)
         self.pitch =0
-=======
-        
-
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
     def set_lights(self, brightness):
         """
         Sets the given brightness to the led lights
@@ -32,21 +22,14 @@ class GPIOWriter:
         in_max = 100
         PWM = self.__map(brightness, in_max, in_min, out_max, out_min)
         print(PWM)
-<<<<<<< HEAD
         self.lights.set_PWM_dutycycle(self.pin_led_lights, 255)
-=======
-        self.lights.set_PWM_frequency(self.pin_led_lights, int(PWM))
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
         return True
     def adjust_camera(self, pitch):
         """
         adjust the pitch of the camera according to pitch of rov, so camera is always horizontal.
         :param pitch: the pitch of ROV
         """
-<<<<<<< HEAD
         self.pitch = pitch
-=======
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
         out_min = 1100
         out_max = 1900
         in_min = -45
@@ -76,10 +59,7 @@ class GPIOWriter:
         :param offset: the given offset
         """
         self.camera_tilt_offset = offset
-<<<<<<< HEAD
         self.adjust_camera(self.pitch)
-=======
->>>>>>> 1284c7d5cf3e1ec050b021075f895b6fdd3de53d
         return True
 if __name__ == '__main__':
     gpi = GPIOWriter()
