@@ -22,11 +22,10 @@ class HandleWriterQueue:
         """
 
         try:
-            
+
             from_arduino_to_arduino = self.from_arduino_to_arduino_queue.get_nowait()
 #             print(from_arduino_to_arduino)
             self.reader_queue.put(from_arduino_to_arduino)
-
             sensor = from_arduino_to_arduino.split(':')
             if sensor[0] == 'roll':
                 self.__append_stepper_arduino_writer_queue(from_arduino_to_arduino)
@@ -42,7 +41,6 @@ class HandleWriterQueue:
             if item[0] in self.arduino_sensor_commands:
                 self.__append_sensor_arduino_writer_queue(message)
             elif item[0] in self.arduino_stepper_commands:
-                print('fuck alt')
                 self.__append_stepper_arduino_writer_queue(message)
             elif item[0] == 'com_port_search':
                 return False

@@ -5,7 +5,7 @@ from threading import Thread
 class MessageDispatcher(Thread):
     def __init__(self, data_queue):
         Thread.__init__(self)
-        self.ip = 'tcp://10.0.0.54:8765'
+        self.ip = 'tcp://10.0.0.27:8765'
         context = zmq.Context()
         self.socket = context.socket(zmq.PUB)
         self.connect()
@@ -21,7 +21,7 @@ class MessageDispatcher(Thread):
 
     def publish(self):
         test = self.data_queue.get_nowait()
-#         print('dispatch data')
+        # print(test)
         self.socket.send_json(test)
 #         self.counter = self.counter +1
 #         print(self.counter)

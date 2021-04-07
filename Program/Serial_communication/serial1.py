@@ -37,12 +37,20 @@ class SerialWriterReader(Thread):
             except TypeError:
                 pass
             incoming_message = self.__read_incoming_data()
-            if incoming_message:
-                print(incoming_message)
-                message = incoming_message.split(TERMINATOR,1)[0]
-                if message in self.FROM_ARDUINO_TO_ARDUINO:
-                    self.from_arduino_to_arduino_queue.put(incoming_message)
-                self.input_queue.put(incoming_message)
+            for message in incoming_message:
+                if message:
+                    # print(message)
+                    try:
+                        self.input_queue.put_nowait(message)
+                        msg = message.split(TERMINATOR,1)[0]
+                        if msg in self.FROM_ARDUINO_TO_ARDUINO:
+                            # print(message,'kuk')
+                            try:
+                                self.from_arduino_to_arduino_queue.put(message)
+                            except queue.Full:
+                                pass
+                    except queue.Full:
+                        pass
 
     def __write_serial_data(self, message):
         """
@@ -72,9 +80,15 @@ class SerialWriterReader(Thread):
         """
         message_received = ""
         try:
-            message_received = self.serial_port.read(self.serial_port.in_waiting)
-            message_received = message_received.strip()
-            message_received = message_received.decode(ENCODING).strip(START_CHAR).strip(END_CHAR)
+            message_received = self.serial_port.read(self.serial_port.in_waiting or 1)
+
+            message_received = message_received.decode(ENCODING).\
+                                                replace(START_CHAR, "").\
+                                                replace(END_CHAR, "").\
+                                                replace(" ", "")
+            message_received = message_received.split("\n")
+            # if message_received:
+            #     print(message_received, "e de sammenheng")
         except (Exception) as e:
             print(e, "serial1")
         return message_received

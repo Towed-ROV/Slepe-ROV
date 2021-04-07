@@ -1,6 +1,12 @@
+import queue
+from threading import Thread
 from sensor import Sensor
-class SerialMessageRecivedHandler:
-    def __init__(self, gui_command_queue, sensor_list, valid_sensor_list):
+from time import sleep
+
+
+class SerialMessageRecivedHandler(Thread):
+    def __init__(self, gui_command_queue, sensor_list, valid_sensor_list, message_queue):
+        Thread.__init__(self)
         self.message_received_queue = gui_command_queue
         self.sensor_list = sensor_list
         self.valid_sensor_list = valid_sensor_list
@@ -10,19 +16,27 @@ class SerialMessageRecivedHandler:
                                'auto_mode', 'manual_wing_pos', 'set_point_depth',
                                'emergency_surface'
                                ]
+        self.message_queue = message_queue
+        self.count = 0
 
-    def handle_message_recevied(self, received_message):
-        try:
-            received_message = received_message.strip()
-            message = received_message.split(':',1)
-            if message[0] in  self.valid_commands:
-#                 print("----------------------")
-                self.message_received_queue.put(received_message)
-            else:
-                self.__add_sensor(message)
-        except Exception as e:
-            pass
-#             print(received_message, "error: ", e)
+    def run(self):
+        while True:
+            try:
+                print(self.count)
+                self.count = self.count + 1
+                # received_message = self.message_queue.get_nowait()
+                # print(received_message)
+    #             message = received_message.split(':',1)
+    #             if message[0] in  self.valid_commands:
+    # #                 print("----------------------")
+    #                 self.message_received_queue.put(received_message)
+    #             else:
+    #                 self.__add_sensor(message)
+            except queue.Empty:
+                pass
+            except ValueError:
+                pass
+    #             print(received_message, "error: ", e)
 
     def __add_sensor(self, message):
         """
@@ -36,8 +50,8 @@ class SerialMessageRecivedHandler:
         else:
             name = message[0]
             value = message[1]
-            if name == 'depth':
-                print(message)
+            # if name == 'depth':
+            #     print(message)
             if name in self.valid_sensor_list:
                 if name in self.sensor_list.keys():
                     self.sensor_list[name] = float(value)
@@ -47,3 +61,11 @@ class SerialMessageRecivedHandler:
                     # print(sensor)
                     # print('------')
                     self.sensor_list[name] = float(value)
+if __name__ == '__main__':
+    q1 = queue.Queue()
+    q2 = queue.Queue()
+    q2.put("sdtig:2")
+    test = SerialMessageRecivedHandler(q1, [], {}, q2)
+    test.start()
+    while True:
+        pass

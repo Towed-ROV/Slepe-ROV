@@ -30,7 +30,9 @@ class SerialHandler(Thread):
                                   'yaw', 'roll', 'pitch', 'depth_beneath_rov',
                                   'velocity_vertical']
         self.serial_message_received_handler = SerialMessageRecivedHandler(self.gui_command_queue, self.sensor_list,
-                                                                           self.VALID_SENSOR_LIST)
+                                                                           self.VALID_SENSOR_LIST, self.reader_queue)
+        self.serial_message_received_handler.daemon = True
+        self.serial_message_received_handler.start()
         self.handle_writer_queue = HandleWriterQueue(self.reader_queue, self.writer_queue, self.writer_queue_IMU,
                                                      self.writer_queue_sensor_arduino, self.writer_queue_stepper_arduino,
                                                      self.from_arduino_to_arduino_queue)
@@ -41,9 +43,9 @@ class SerialHandler(Thread):
                 self.com_port_found = self.__find_com_ports()
                 if self.com_port_found:
                     for serial_found in self.serial_connected:
-                        self.serial_message_received_handler.handle_message_recevied(serial_found)
+                        self.reader_queue.put(serial_found)
             while self.com_port_found:
-                self.__get_incomming_messages()
+                # self.__get_incomming_messages()
                 test = self.handle_writer_queue.put_in_writer_queue()
                 self.com_port_found = test
 
@@ -78,7 +80,7 @@ class SerialHandler(Thread):
                                                                               self.reader_queue, com_port, 115200)
                 self.writer_queue_sensor_arduino.put('sensor_arduino:OK')
                 self.serial_connected.append('SensorArduino:' + com_port)
-            if 'StepperArduino' in port_name:
+            if 'StepperArduino1' in port_name:
                 self.stepper_arduino_serial_writer = self.__open_serial_thread(self.writer_queue_stepper_arduino,
                                                                                self.reader_queue, com_port, 57600)
                 self.writer_queue_stepper_arduino.put('stepper_arduino:OK')
@@ -91,8 +93,6 @@ class SerialHandler(Thread):
         Also checks if the message is a sensor, and either update the sensor value or add a new sensor.
         """
         try:
-            message = self.reader_queue.get_nowait()
-#             print(message)
             self.serial_message_received_handler.handle_message_recevied(message)
         except queue.Empty:
             pass
