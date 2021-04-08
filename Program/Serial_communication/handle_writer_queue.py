@@ -1,4 +1,6 @@
 import queue
+
+
 class HandleWriterQueue:
     def __init__(self, reader_queue, writer_queue, writer_queue_IMU,
                  writer_queue_sensor_arduino, writer_queue_stepper_arduino, from_arduino_to_arduino_queue):
@@ -23,7 +25,7 @@ class HandleWriterQueue:
 
         try:
 
-            from_arduino_to_arduino = self.from_arduino_to_arduino_queue.get_nowait()
+            from_arduino_to_arduino = self.from_arduino_to_arduino_queue.get(timeout=0.005)
 #             print(from_arduino_to_arduino)
             self.reader_queue.put(from_arduino_to_arduino)
             sensor = from_arduino_to_arduino.split(':')
@@ -36,11 +38,12 @@ class HandleWriterQueue:
         except queue.Empty:
             pass
         try:
-            message = self.writer_queue.get_nowait()
+            message = self.writer_queue.get(timeout=0.005)
             item = message.split(':',1)
             if item[0] in self.arduino_sensor_commands:
                 self.__append_sensor_arduino_writer_queue(message)
             elif item[0] in self.arduino_stepper_commands:
+                print("handlewriter" , message)
                 self.__append_stepper_arduino_writer_queue(message)
             elif item[0] == 'com_port_search':
                 return False

@@ -46,15 +46,13 @@ class PayloadHandler(Thread):
         takes the received payload and reads it and either handles it or forwards it to the serial output queue
         """
         try:
-            payload_type, payload_names, payload_data = self.payload_reader.read_payload(self.message_queue.get_nowait())
+            payload_type, payload_names, payload_data = self.payload_reader.read_payload(self.message_queue.get(timeout=0.001))
             if payload_type == 'commands':
                 if payload_data[0] in self.commands_to_serial:
                     self.command_queue.put(str(payload_data[0]) + ':' + str(payload_data[1]))
                 elif payload_data[0] == 'start_system':
                     self.start_rov = payload_data[1]
                     self.gui_command_queue.put(str(payload_data[0]) + ':' + str(payload_data[1]))
-                    print(payload_data[0])
-                    print(str(payload_data[0]))
                 elif payload_data[0] == 'lights_on_off':
                     pass
                     # if self.gpio_writer.set_lights(100):
@@ -64,11 +62,10 @@ class PayloadHandler(Thread):
 #                     if self.gpio_writer.set_manual_offset_camera_tilt(payload_data[1]):
 #                         self.gui_command_queue.put(payload_data[0] + ':' + str(True))
                 elif payload_data[0] == 'depth_or_seafloor':
-                    print('kai1')
                     self.depth_or_seafloor = payload_data[1]
 
                     self.gui_command_queue.put(payload_data[0] + ':' + str(True))
-                    print('kai1')
+
 
             if payload_type == 'settings':
                 if payload_data[0] == 'arduino sensor':
@@ -86,9 +83,8 @@ class PayloadHandler(Thread):
         """
         try:
             for sensor in self.sensor_list:
-                sensor = sensor.split(':', 1)
-                if sensor[0].strip() == 'pitch':
-                    # self.gpio_writer.adjust_camera(sensor[1].strip())
+                if sensor.name.strip() == 'pitch':
+                    # self.gpio_writer.adjust_camera(sensor.value.strip())
                     pass
         except RuntimeError:
             pass

@@ -23,7 +23,7 @@ class CommandReceiver(Thread):
 
     def recv(self):
         test =  self.connection.recv_json()
-        print(test)
+        print(test, "command recv")
         return test
 
     def run(self):
@@ -32,6 +32,6 @@ class CommandReceiver(Thread):
             try:
                 cmd = self.recv()
                 self.cmd_queue.put(cmd)
-                self.send({"succese" : True})
+                self.send({"success" : True})
             except (Exception) as e:
                 print(e, 'command_receiver')

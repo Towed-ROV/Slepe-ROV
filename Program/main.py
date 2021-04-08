@@ -1,4 +1,5 @@
 import threading
+from time import sleep
 
 from payloads.payload_writer import PayloadWriter
 from payloads.payload_handler import PayloadHandler
@@ -8,7 +9,7 @@ from multiprocessing import Event, Queue
 from video_stream.video_server import VideoServer
 
 arduino_command_queue = Queue()
-sensor_list = {}
+sensor_list = []
 gui_command_queue = Queue()
 #starting threads
 payload_handler = PayloadHandler(sensor_list, arduino_command_queue, gui_command_queue)
@@ -36,14 +37,15 @@ def __start_communication_threads():
         serial_handler.start()
     except (Exception) as e:
         print(e, ' main')
-
-
-while True:
-
-    try:
-        if payload_handler.start_rov != False:
-            if payload_handler.start_rov == True and not(payload_writer.is_alive() or serial_handler.is_alive()):
-                print('starting threads')
-                __start_communication_threads()
-    except (Exception) as e:
-        print(e, 'main')
+try:
+    if payload_handler.start_rov != False:
+        if payload_handler.start_rov == True and not(payload_writer.is_alive() or serial_handler.is_alive()):
+            print('starting threads')
+            __start_communication_threads()
+except (Exception) as e:
+    print(e, 'main')
+try:
+    while True:
+        sleep(10)
+except KeyboardInterrupt:
+    print("exit prg")

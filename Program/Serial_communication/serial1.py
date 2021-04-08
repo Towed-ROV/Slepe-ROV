@@ -1,4 +1,6 @@
 from threading import Thread
+from time import time
+
 import serial
 import queue
 
@@ -6,6 +8,8 @@ ENCODING = 'utf-8'
 TERMINATOR = ':'
 START_CHAR = '<'
 END_CHAR = '>'
+NEW_LINE = '\n'
+
 
 class SerialWriterReader(Thread):
     def __init__(self, output_queue, input_queue, com_port, baud_rate, from_arduino_to_arduino_queue):
@@ -28,9 +32,10 @@ class SerialWriterReader(Thread):
         self.counter = 0
 
     def run(self):
-        while True:
+        while not self.stop:
             try:
-                test = self.output_queue.get_nowait()
+                test = self.output_queue.get(timeout=0.001)
+
                 self.__write_serial_data(test)
             except queue.Empty:
                 pass
@@ -46,11 +51,12 @@ class SerialWriterReader(Thread):
                         if msg in self.FROM_ARDUINO_TO_ARDUINO:
                             # print(message,'kuk')
                             try:
-                                self.from_arduino_to_arduino_queue.put(message)
+                                self.from_arduino_to_arduino_queue.put_nowait(message)
                             except queue.Full:
                                 pass
                     except queue.Full:
                         pass
+
 
     def __write_serial_data(self, message):
         """
@@ -58,7 +64,7 @@ class SerialWriterReader(Thread):
         :param message: message to send to serial
         """
         if self.serial_port.isOpen():
-            output = START_CHAR + message + END_CHAR
+            output = START_CHAR + message + END_CHAR + NEW_LINE
             if output != self.last_output:
                 try:
                     output = output.encode(ENCODING)

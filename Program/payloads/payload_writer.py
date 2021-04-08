@@ -11,18 +11,20 @@ class PayloadWriter(Thread):
         self.message_queue = Queue()
         self.gui_command_queue = gui_command_queue
         self.message_dispatcher = MessageDispatcher(self.message_queue)
-        self.message_dispatcher.daemon = True
-        self.message_dispatcher.start()
         self.interval = 0.1
 
     def run(self):
         previousMillis = 0
         while True:
             self.__add_commands_to_queue()
+            self.message_dispatcher.publish()
             currentMillis  = time.monotonic()
             if currentMillis - previousMillis >= self.interval:
                 self.__merge_sensor_payload()
+                self.message_dispatcher.publish()
                 previousMillis = currentMillis
+
+
 
 
     def __merge_sensor_payload(self):
@@ -32,11 +34,13 @@ class PayloadWriter(Thread):
         sensors = []
 
         json_sensor = ''
-        if self.sensor_list.items():
-            for sensor_name, sensor_value in self.sensor_list.items():
+
+        if self.sensor_list:
+            for sensor in self.sensor_list:
                 # 
                 # sensors.append('%s:%s'%sensor_name, sensor_value)
-            
+                sensor_name = sensor.name
+                sensor_value = sensor.value
                 sensors.append({"name" : sensor_name,
                                 "value" : sensor_value})
 #                 print(type(sensor_value))   
@@ -50,16 +54,17 @@ class PayloadWriter(Thread):
                 "payload_data": sensors
             }
             
-#             print('-----------')
-#             print(sensor_structure)
-#             print('-----------')
+            # print('-----------')
+            # print(sensor_structure)
+            # print('-----------')
 
             self.message_queue.put(sensor_structure)
 
+
     def __add_commands_to_queue(self):
         try:
-            message = self.gui_command_queue.get_nowait()
-            print(message)
+            message = self.gui_command_queue.get(timeout=0.001)
+            # print(message)
             message = message.split(":",1)
             if message[1] == "True":
                 message[1] = True
@@ -72,7 +77,7 @@ class PayloadWriter(Thread):
                 "payload_data": json_command
             }
             self.message_queue.put(command_structure)
-            print(command_structure)
+            print(command_structure, "responce")
         except queue.Empty:
             pass
         except IndexError:

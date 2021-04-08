@@ -8,3 +8,9 @@ class Sensor:
 
     def get_sensor_value(self):
         return self.value
+
+    def set_sensor_name(self, name):
+        self.name = name
+
+    def get_sensor_name(self):
+        return self.name

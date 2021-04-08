@@ -1,7 +1,7 @@
 import queue
 from threading import Thread
 from sensor import Sensor
-from time import sleep
+from time import sleep, time
 
 
 class SerialMessageRecivedHandler(Thread):
@@ -20,23 +20,28 @@ class SerialMessageRecivedHandler(Thread):
         self.count = 0
 
     def run(self):
+        counter_sent = 0
+        counter_skip = 0
+        start = time()
         while True:
             try:
-                print(self.count)
-                self.count = self.count + 1
-                # received_message = self.message_queue.get_nowait()
+                # print(self.count)
+                # self.count = self.count + 1
+                received_message = self.message_queue.get(timeout=0.01)
+                counter_sent = counter_sent + 1
                 # print(received_message)
-    #             message = received_message.split(':',1)
-    #             if message[0] in  self.valid_commands:
-    # #                 print("----------------------")
-    #                 self.message_received_queue.put(received_message)
-    #             else:
-    #                 self.__add_sensor(message)
+                message = received_message.split(':',1)
+                if message[0] in  self.valid_commands:
+                    print("----------------------")
+                    print(received_message)
+                    print("----------------------")
+                    self.message_received_queue.put(received_message)
+                else:
+                    self.__add_sensor(message)
             except queue.Empty:
-                pass
+                counter_skip = counter_skip +1
             except ValueError:
                 pass
-    #             print(received_message, "error: ", e)
 
     def __add_sensor(self, message):
         """
@@ -48,19 +53,22 @@ class SerialMessageRecivedHandler(Thread):
         if ('IMU' or 'sensorArduino' or 'stepperArduino') in message[0]:
             pass
         else:
-            name = message[0]
-            value = message[1]
-            # if name == 'depth':
-            #     print(message)
-            if name in self.valid_sensor_list:
-                if name in self.sensor_list.keys():
-                    self.sensor_list[name] = float(value)
-                else:
-                    sensor = Sensor(name, float(value))
-                    # print('------')
-                    # print(sensor)
-                    # print('------')
-                    self.sensor_list[name] = float(value)
+            try:
+                # print(message)
+                name = message[0]
+                value = message[1]
+                # if name == 'depth':
+                #     print(message)
+                if name in self.valid_sensor_list:
+                    for sensor in self.sensor_list:
+                        if sensor.get_sensor_name() == name:
+                            sensor.set_sensor_value(value)
+                            break
+                    else:
+                        sensor = Sensor(name, float(value))
+                        self.sensor_list.append(sensor)
+            except IndexError:
+                pass
 if __name__ == '__main__':
     q1 = queue.Queue()
     q2 = queue.Queue()
@@ -68,4 +76,4 @@ if __name__ == '__main__':
     test = SerialMessageRecivedHandler(q1, [], {}, q2)
     test.start()
     while True:
-        pass
+        sleep(10)
