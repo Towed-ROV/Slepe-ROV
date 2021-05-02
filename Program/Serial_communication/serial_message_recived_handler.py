@@ -52,11 +52,12 @@ class SerialMessageRecivedHandler(Thread):
         """
         if ('IMU' or 'sensorArduino' or 'stepperArduino') in message[0]:
             pass
+        
         else:
             try:
-                # print(message)
+#                 print(message)
                 name = message[0]
-                value = message[1]
+                value = float(message[1])
                 # if name == 'depth':
                 #     print(message)
                 if name in self.valid_sensor_list:
@@ -65,7 +66,7 @@ class SerialMessageRecivedHandler(Thread):
                             sensor.set_sensor_value(value)
                             break
                     else:
-                        sensor = Sensor(name, float(value))
+                        sensor = Sensor(name, value)
                         self.sensor_list.append(sensor)
             except IndexError:
                 pass

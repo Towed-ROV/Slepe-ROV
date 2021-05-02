@@ -1,7 +1,7 @@
 from send_and_receive.message_receiver import MessageReceiver
 from send_and_receive.command_receiver import CommandReceiver
 from payloads.payload_reader import PayloadReader
-# from GPIO_writer import GPIOWriter
+from GPIO_writer import GPIOWriter
 import queue
 import json
 from threading import Thread
@@ -26,7 +26,7 @@ class PayloadHandler(Thread):
         self.command_receiver.start()
         self.gui_command_queue = gui_command_queue
         self.command_queue = command_queue
-        # self.gpio_writer = GPIOWriter()
+        self.gpio_writer = GPIOWriter()
         self.payload_reader = PayloadReader()
         self.start_rov = 1
         self.depth_or_seafloor = "" # dont know where to send yet, due to the seafloor tracking not implemented.
@@ -53,14 +53,13 @@ class PayloadHandler(Thread):
                 elif payload_data[0] == 'start_system':
                     self.start_rov = payload_data[1]
                     self.gui_command_queue.put(str(payload_data[0]) + ':' + str(payload_data[1]))
-                elif payload_data[0] == 'lights_on_off':
-                    pass
-                    # if self.gpio_writer.set_lights(100):
-                    #     self.gui_command_queue.put(payload_data[0] + ':' + str(True))
+                elif payload_data[0] == 'brightness_light':
+                    print("light")
+                    if self.gpio_writer.set_lights(payload_data[1]):
+                        self.gui_command_queue.put(payload_data[0] + ':' + str(True))
                 elif payload_data[0] == 'camera_offset_angle':
-                    pass
-#                     if self.gpio_writer.set_manual_offset_camera_tilt(payload_data[1]):
-#                         self.gui_command_queue.put(payload_data[0] + ':' + str(True))
+                    if self.gpio_writer.set_manual_offset_camera_tilt(payload_data[1]):
+                        self.gui_command_queue.put(payload_data[0] + ':' + str(True))
                 elif payload_data[0] == 'depth_or_seafloor':
                     self.depth_or_seafloor = payload_data[1]
 

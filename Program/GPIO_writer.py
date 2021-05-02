@@ -2,8 +2,8 @@ import pigpio
 class GPIOWriter:
     def __init__(self):
 
-        self.pin_led_lights = 20
-        self.pin_camera_tilt = 12
+        self.pin_led_lights = 12
+        self.pin_camera_tilt = 18
         self.camera_tilt_offset = 0
         self.lights = pigpio.pi()
         self.lights.set_mode(self.pin_led_lights, pigpio.OUTPUT)
@@ -38,7 +38,7 @@ class GPIOWriter:
         pwm = self.__map(adjusted_pitch, in_max, in_min, out_max, out_min)
         self.camera_tilt.set_servo_pulsewidth(self.pin_camera_tilt, pwm)
         
-        print(self.camera_tilt.get_servo_pulsewidth(12),'dfs')
+#         print(self.camera_tilt.get_servo_pulsewidth(self.pin_camera_tilt),'dfs')
 
     def __map(self, in_value, in_max, in_min, out_max, out_min):
         """

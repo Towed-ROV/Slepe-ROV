@@ -54,9 +54,10 @@ class PayloadWriter(Thread):
                 "payload_data": sensors
             }
             
-            # print('-----------')
-            # print(sensor_structure)
-            # print('-----------')
+            
+#             print('-----------')
+#             print(sensor_structure)
+#             print('-----------')
 
             self.message_queue.put(sensor_structure)
 

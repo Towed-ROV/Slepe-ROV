@@ -4,7 +4,7 @@ import zmq
 import queue
 class MessageDispatcher():
     def __init__(self, data_queue):
-        self.ip = 'tcp://10.0.0.27:8765'
+        self.ip = 'tcp://192.168.0.102:8765'
         context = zmq.Context()
         self.socket = context.socket(zmq.PUB)
         self.connect()
@@ -15,26 +15,25 @@ class MessageDispatcher():
         self.counter_skip = 0
         tim = time()
         self.start = tim
-        print("dafuk")
 
     def publish(self):
         try:
             test = self.data_queue.get(timeout=0.01)
             self.counter_sent += 1
-            # print(test)
+#             print(test)
             self.socket.send_json(test)
     #         self.counter = self.counter +1
     #         print(self.counter)
         except queue.Empty:
             self.counter_skip += 1
         # DEBUGG HELP
-        if (time() - self.start) > 5:
-            print("TIME________: ", str(time() - self.start))
-            print("Times sent  : ", str(self.counter_sent))
-            print("Times skips : ", str(self.counter_skip))
-            self.counter_sent = 0
-            self.counter_skip = 0
-            self.start = time()
+#         if (time() - self.start) > 5:
+#             print("TIME________: ", str(time() - self.start))
+#             print("Times sent  : ", str(self.counter_sent))
+#             print("Times skips : ", str(self.counter_skip))
+#             self.counter_sent = 0
+#             self.counter_skip = 0
+#             self.start = time()
 
     def disconnect(self):
         self.socket.disconnect()

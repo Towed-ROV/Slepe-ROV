@@ -4,7 +4,7 @@ from threading import Thread
 class MessageReceiver(Thread):
     def __init__(self, queue):
         Thread.__init__(self)
-        self.ip = 'tcp://10.0.0.27:8764'
+        self.ip = 'tcp://192.168.0.20:8764'
         context = zmq.Context()
         self.socket = context.socket(zmq.SUB)
         self.socket.connect(self.ip)

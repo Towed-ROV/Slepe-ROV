@@ -9,7 +9,8 @@ TERMINATOR = ':'
 START_CHAR = '<'
 END_CHAR = '>'
 NEW_LINE = '\n'
-
+START = b'<'
+STOP = b'>'
 
 class SerialWriterReader(Thread):
     def __init__(self, output_queue, input_queue, com_port, baud_rate, from_arduino_to_arduino_queue):
@@ -27,6 +28,8 @@ class SerialWriterReader(Thread):
             bytesize=serial.EIGHTBITS,\
             timeout=0)
         self.stop = False
+        self.in_packet = bytearray()
+        self.packet = bytearray()
         self.last_output = ''
         self.FROM_ARDUINO_TO_ARDUINO = ['depth', 'roll', 'pitch']
         self.counter = 0
@@ -44,17 +47,21 @@ class SerialWriterReader(Thread):
             incoming_message = self.__read_incoming_data()
             for message in incoming_message:
                 if message:
-                    # print(message)
                     try:
-                        self.input_queue.put_nowait(message)
-                        msg = message.split(TERMINATOR,1)[0]
-                        if msg in self.FROM_ARDUINO_TO_ARDUINO:
-                            # print(message,'kuk')
+                        if not "Arduino" in message:
+                            print(message)
                             try:
-                                self.from_arduino_to_arduino_queue.put_nowait(message)
+                                self.input_queue.put_nowait(message)
+                                msg = message.split(TERMINATOR,1)[0]
+                                if msg in self.FROM_ARDUINO_TO_ARDUINO:
+                                    # print(message,'kuk')
+                                    try:
+                                        self.from_arduino_to_arduino_queue.put_nowait(message)
+                                    except queue.Full:
+                                        pass
                             except queue.Full:
                                 pass
-                    except queue.Full:
+                    except TypeError:
                         pass
 
 
@@ -69,8 +76,8 @@ class SerialWriterReader(Thread):
                 try:
                     output = output.encode(ENCODING)
                     self.serial_port.write(output)
-                    # print(output, '    ', str(self.COUNTER), '    ', self.baud_rate)
-                    # self.COUNTER = self.COUNTER +1
+#                     print(output, '    ', str(self.counter), '    ', self.baud_rate)
+                    self.counter = self.counter +1
                     self.last_output = output
                 except (Exception) as e:
                     print(e, 'serial writer')
@@ -78,26 +85,36 @@ class SerialWriterReader(Thread):
             self.serial_port.open()
             print('Serial port not open : ' + str(self.com_port))
             self.output_queue.append(message)
-
+    def handle_packet(self, data):
+        message_received = data.decode(ENCODING).\
+                                                replace(START_CHAR, "").\
+                                                replace(END_CHAR, "").\
+                                                replace(" ", "")
+        return message_received
     def __read_incoming_data(self):
         """
         reads from serial port
         :return: message read from serial port
         """
+        data_received = []
         message_received = ""
         try:
-            message_received = self.serial_port.read(self.serial_port.in_waiting or 1)
-
-            message_received = message_received.decode(ENCODING).\
-                                                replace(START_CHAR, "").\
-                                                replace(END_CHAR, "").\
-                                                replace(" ", "")
-            message_received = message_received.split("\n")
-            # if message_received:
-            #     print(message_received, "e de sammenheng")
+            data = self.serial_port.read(self.serial_port.in_waiting or 1)
+            for byte in serial.iterbytes(data):
+                if byte == START:
+                    self.in_packet = True
+                elif byte == STOP:
+                    self.in_packet = False
+                    data_received.append(self.handle_packet(bytes(self.packet))) # make read-only copy
+                    del self.packet[:]
+                elif self.in_packet:
+                    self.packet.extend(byte)
+                else:
+                    pass
+        
         except (Exception) as e:
             print(e, "serial1")
-        return message_received
+        return data_received
 
     def stop_thread(self):
         self.stop = True
@@ -108,7 +125,7 @@ if __name__ == '__main__':
     q1 = queue.Queue()
     q2 = queue.Queue()
     q3 = queue.Queue()
-    ser = SerialWriterReader(q1,q2,'COM28', 115200, q3)
+    ser = SerialWriterReader(q1,q2,'/dev/ttyUSB0', 115200, q3)
     ser.daemon =  True
     ser.start()
     while True:
