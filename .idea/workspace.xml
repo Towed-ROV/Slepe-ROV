@@ -20,15 +20,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4db6534e-86c7-4918-be47-1b715e0fd94c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Slepe-ROV-RPi.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Slepe-ROV-RPi.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Program/sea_floor_tracker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Program (2).zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Program (3).zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Program (4).zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Program.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Program3/test sub zmq.py" beforeDir="false" afterPath="$PROJECT_DIR$/Program3/test sub zmq.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/subTest.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/subTest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Program/Serial_communication/serial1.py" beforeDir="false" afterPath="$PROJECT_DIR$/Program/Serial_communication/serial1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Program/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Program/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Program/payloads/payload_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/Program/payloads/payload_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Program/send_and_receive/message_receiver.py" beforeDir="false" afterPath="$PROJECT_DIR$/Program/send_and_receive/message_receiver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,7 +50,7 @@
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Program" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -64,8 +61,8 @@
       <recent name="C:\Users\Ishmael\OneDrive - NTNU\Slepe-Rov\Ny mappe\Slepe-ROV-RPi\Serial_communication" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.subTest (1)">
-    <configuration name="main2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.main">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Slepe-ROV-RPi" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -73,11 +70,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Program" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Users\Ishmael\OneDrive - NTNU\Slepe-Rov\Ny mappe\Slepe-ROV-RPi\Program\main2.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Program/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -107,7 +104,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="pubTest" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="sea_floor_tracker" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Slepe-ROV-RPi" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -115,11 +112,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Program" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pubTest.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Program/sea_floor_tracker.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -172,11 +169,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main" />
+        <item itemvalue="Python.sea_floor_tracker" />
         <item itemvalue="Python.subTest (1)" />
         <item itemvalue="Python.pubTest (1)" />
         <item itemvalue="Python.subTest" />
-        <item itemvalue="Python.pubTest" />
-        <item itemvalue="Python.main2" />
       </list>
     </recent_temporary>
   </component>
@@ -204,36 +201,37 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="740" y="275" key="FileChooserDialogImpl" timestamp="1615540986667">
+    <state x="740" y="275" key="FileChooserDialogImpl" timestamp="1619965673459">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
+    <state x="740" y="275" key="FileChooserDialogImpl/0.0.1920.1040/1920.0.1920.1160@0.0.1920.1040" timestamp="1619965673459" />
     <state x="740" y="275" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1615540986667" />
-    <state width="1899" height="282" key="GridCell.Tab.0.bottom" timestamp="1619958876459">
+    <state width="1899" height="282" key="GridCell.Tab.0.bottom" timestamp="1619965674304">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="282" key="GridCell.Tab.0.bottom/0.0.1920.1040/1920.0.1920.1160@0.0.1920.1040" timestamp="1619958876459" />
-    <state width="1899" height="570" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1615837125654" />
+    <state width="1899" height="282" key="GridCell.Tab.0.bottom/0.0.1920.1040/1920.0.1920.1160@0.0.1920.1040" timestamp="1619965674304" />
+    <state width="1899" height="282" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1619962623628" />
     <state width="2539" height="401" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.243.1920.1040@0.0.2560.1400" timestamp="1615410160008" />
     <state width="2539" height="570" key="GridCell.Tab.0.bottom/0.0.2560.1400@0.0.2560.1400" timestamp="1615474948616" />
-    <state width="1899" height="282" key="GridCell.Tab.0.center" timestamp="1619958876459">
+    <state width="1899" height="282" key="GridCell.Tab.0.center" timestamp="1619965674304">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="282" key="GridCell.Tab.0.center/0.0.1920.1040/1920.0.1920.1160@0.0.1920.1040" timestamp="1619958876459" />
-    <state width="1899" height="570" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1615837125653" />
+    <state width="1899" height="282" key="GridCell.Tab.0.center/0.0.1920.1040/1920.0.1920.1160@0.0.1920.1040" timestamp="1619965674304" />
+    <state width="1899" height="282" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1619962623628" />
     <state width="2539" height="401" key="GridCell.Tab.0.center/0.0.2560.1400/2560.243.1920.1040@0.0.2560.1400" timestamp="1615410160008" />
     <state width="2539" height="570" key="GridCell.Tab.0.center/0.0.2560.1400@0.0.2560.1400" timestamp="1615474948615" />
-    <state width="1899" height="282" key="GridCell.Tab.0.left" timestamp="1619958876459">
+    <state width="1899" height="282" key="GridCell.Tab.0.left" timestamp="1619965674303">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="282" key="GridCell.Tab.0.left/0.0.1920.1040/1920.0.1920.1160@0.0.1920.1040" timestamp="1619958876459" />
-    <state width="1899" height="570" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1615837125653" />
+    <state width="1899" height="282" key="GridCell.Tab.0.left/0.0.1920.1040/1920.0.1920.1160@0.0.1920.1040" timestamp="1619965674303" />
+    <state width="1899" height="282" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1619962623628" />
     <state width="2539" height="401" key="GridCell.Tab.0.left/0.0.2560.1400/2560.243.1920.1040@0.0.2560.1400" timestamp="1615410160008" />
     <state width="2539" height="570" key="GridCell.Tab.0.left/0.0.2560.1400@0.0.2560.1400" timestamp="1615474948615" />
-    <state width="1899" height="282" key="GridCell.Tab.0.right" timestamp="1619958876459">
+    <state width="1899" height="282" key="GridCell.Tab.0.right" timestamp="1619965674304">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="282" key="GridCell.Tab.0.right/0.0.1920.1040/1920.0.1920.1160@0.0.1920.1040" timestamp="1619958876459" />
-    <state width="1899" height="570" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1615837125654" />
+    <state width="1899" height="282" key="GridCell.Tab.0.right/0.0.1920.1040/1920.0.1920.1160@0.0.1920.1040" timestamp="1619965674304" />
+    <state width="1899" height="282" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1619962623628" />
     <state width="2539" height="401" key="GridCell.Tab.0.right/0.0.2560.1400/2560.243.1920.1040@0.0.2560.1400" timestamp="1615410160008" />
     <state width="2539" height="570" key="GridCell.Tab.0.right/0.0.2560.1400@0.0.2560.1400" timestamp="1615474948616" />
     <state width="1899" height="348" key="GridCell.Tab.1.bottom" timestamp="1612617256951">

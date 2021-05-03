@@ -8,7 +8,7 @@ from threading import Thread
 from Serial_communication.handle_writer_queue import HandleWriterQueue
 from Serial_communication.serial_message_recived_handler import SerialMessageRecivedHandler
 class SerialHandler(Thread):
-    def __init__(self, sensor_list, arduino_command_queue, gui_command_queue):
+    def __init__(self, sensor_list, arduino_command_queue, gui_command_queue, set_point_queue, rov_depth_queue):
         """
 
         :param sensor_list: list of all sensor connected
@@ -26,6 +26,8 @@ class SerialHandler(Thread):
         self.serial_connected = []
         self.serial_threads = []
         self.com_port_found = False
+        self.set_point_queue = set_point_queue
+        self.rov_depth_queue = rov_depth_queue
         self.VALID_SENSOR_LIST = ['depth', 'pressure', 'temperature',
                                   'wing_pos_port', 'wing_pos_sb',
                                   'yaw', 'roll', 'pitch', 'depth_beneath_rov',
@@ -36,7 +38,7 @@ class SerialHandler(Thread):
         self.serial_message_received_handler.start()
         self.handle_writer_queue = HandleWriterQueue(self.reader_queue, self.writer_queue, self.writer_queue_IMU,
                                                      self.writer_queue_sensor_arduino, self.writer_queue_stepper_arduino,
-                                                     self.from_arduino_to_arduino_queue)
+                                                     self.from_arduino_to_arduino_queue, set_point_queue, rov_depth_queue)
     def run(self):
         while True:
             if not self.com_port_found:

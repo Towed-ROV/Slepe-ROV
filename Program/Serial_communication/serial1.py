@@ -85,12 +85,14 @@ class SerialWriterReader(Thread):
             self.serial_port.open()
             print('Serial port not open : ' + str(self.com_port))
             self.output_queue.append(message)
+
     def handle_packet(self, data):
         message_received = data.decode(ENCODING).\
                                                 replace(START_CHAR, "").\
                                                 replace(END_CHAR, "").\
                                                 replace(" ", "")
         return message_received
+
     def __read_incoming_data(self):
         """
         reads from serial port

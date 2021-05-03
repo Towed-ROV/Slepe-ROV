@@ -8,7 +8,7 @@ from threading import Thread
 from multiprocessing import Queue
 
 class PayloadHandler(Thread):
-    def __init__(self, sensor_list, command_queue, gui_command_queue):
+    def __init__(self, sensor_list, command_queue, gui_command_queue, seafloor_sonar_queue, flag_queue):
         """
         Handles
         :param sensor_list:
@@ -29,6 +29,8 @@ class PayloadHandler(Thread):
         self.gpio_writer = GPIOWriter()
         self.payload_reader = PayloadReader()
         self.start_rov = 1
+        self.seafloor_sonar_queue = seafloor_sonar_queue
+        self.flag_queue = flag_queue
         self.depth_or_seafloor = "" # dont know where to send yet, due to the seafloor tracking not implemented.
         self.commands_to_serial = ['com_port_search', 'reset', 'pid_depth_p', 'pid_depth_i',
                                    'pid_depth_d', 'pid_roll_p','pid_roll_i', 'pid_roll_d',
@@ -64,7 +66,10 @@ class PayloadHandler(Thread):
                     self.depth_or_seafloor = payload_data[1]
 
                     self.gui_command_queue.put(payload_data[0] + ':' + str(True))
-
+                elif payload_data[0] == "depth_beneath_boat":
+                    self.seafloor_sonar_queue.put(payload_data[1])
+                elif payload_data[0] == "has_traveled_set_distance":
+                    self.flag_queue.put(payload_data[1])
 
             if payload_type == 'settings':
                 if payload_data[0] == 'arduino sensor':

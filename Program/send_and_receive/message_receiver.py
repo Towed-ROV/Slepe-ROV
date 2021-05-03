@@ -4,7 +4,7 @@ from threading import Thread
 class MessageReceiver(Thread):
     def __init__(self, queue):
         Thread.__init__(self)
-        self.ip = 'tcp://192.168.0.20:8764'
+        self.ip = 'tcp://192.168.0.110:8765'
         context = zmq.Context()
         self.socket = context.socket(zmq.SUB)
         self.socket.connect(self.ip)
@@ -14,13 +14,13 @@ class MessageReceiver(Thread):
     def run(self):
         while True:
             try:
-                self.subscribe()
+                self.recv()
             except zmq.ZMQError:
                 print('could not receive data')
             except (Exception)as e:
                 print(e, 'sada')
 
-    def subscribe(self):
+    def recv(self):
         """
         read data and append to queue
         """
