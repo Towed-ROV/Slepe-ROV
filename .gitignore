@@ -7,6 +7,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.idea/
 __pycache
 # Byte-compiled / optimized / DLL files
 pycache/
