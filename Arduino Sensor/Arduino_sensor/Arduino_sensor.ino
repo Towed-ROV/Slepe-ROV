@@ -72,6 +72,7 @@ float alpha = 0.2;
 float beta = 0.2;
 float previous_roll = 0;
 float previous_pitch = 0;
+float previous_yaw = 0;
 float previous_x = 0;
 float previous_y = 0;
 float previous_z = 0;
@@ -93,7 +94,7 @@ void initSensors()
   if (!mag.begin())
   {
     /* There was a problem detecting the LSM303 ... check your connections */
-    Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
+    Serial.println(F("Ooops, no LSM303 detected ... Check your wiring!"));
     while (1);
   }
 }
@@ -113,29 +114,37 @@ void setup() {
   // wait until communication with the Ping device is established
   // and the Ping device is successfully initialized
   while (!ping.initialize()) {
-    Serial.println("echosounder did not initialize");
+    Serial.println(F("echosounder did not initialize"));
   }
-  Serial.println("Ping device initialized!");
+  Serial.println(F("Ping device initialized!"));
   Wire.begin();
   Wire.setClock(10000);
   while (!sensor.init()) {
-    Serial.println("pressure not initialized!");
+    Serial.println(F("pressure not initialized!"));
     delay(1000);
   }
-  Serial.println("Sensor initialized!");
+  Serial.println(F("Sensor initialized!"));
   sensor.setModel(MS5837::MS5837_30BA);
   sensor.setFluidDensity(1029); // kg/m^3 (freshwater, 1029 for seawater)
   initSensors();
 
-  //  sensors_event_t accel_event;
-  //  sensors_vec_t   orientation;
-  //  if (dof.accelGetOrientation(&accel_event, &orientation)) {
-  //    previous_x = accel_event.acceleration.x;
-  //    previous_y = accel_event.acceleration.y;
-  //    previous_z = accel_event.acceleration.z;
-  //    previous_roll = orientation.roll;
-  //    previous_pitch = orientation.pitch;
-  //  }
+  sensors_event_t accel_event;
+  sensors_event_t mag_event;
+  sensors_vec_t   orientation;
+  accel.getEvent(&accel_event);
+  mag.getEvent(&mag_event);
+  if (dof.accelGetOrientation(&accel_event, &orientation)) {
+    previous_x = accel_event.acceleration.x;
+    previous_y = accel_event.acceleration.y;
+    previous_z = accel_event.acceleration.z;
+    previous_roll = orientation.roll;
+    previous_pitch = orientation.pitch;
+  }
+  if (dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
+  {
+
+    previous_yaw = orientation.heading;
+  }
   while (!Serial) {
     //wait to connect
   }
@@ -166,139 +175,132 @@ void loop() {
   unsigned long currentMillis = millis();
   unsigned long dt = currentMillis - previousMillis ;
   if (dt > interval) {
-    
-   
+
+
     // reads sensor data
 
- 
-      if (turnToSend == UPDATE_DEPTH)
-        {
-          char str_depth[6]; // Depth
-          for (int i = 0; i < 6; i++) {
-            dtostrf(depth, 1, 1, str_depth);
-          }
-          char bigstring[32] = "";
-          strcat(bigstring, a);
-          strcat(bigstring, str_depth);
-          strcat(bigstring, k);
-          Serial.println(bigstring);
-          turnToSend = UPDATE_PING;
 
-          previousMillis = currentMillis;
-          while (!ping.update()) {
-            Serial.println("Ping device update failed");
-          }
-          byte ping_confidence = ping.confidence();
-          if (ping.confidence() > 85) {
-            depthSeafloor = (ping.distance() / float(1000)) + depth_beneath_rov_offset  ;
-          } else {
-            depthSeafloor = -1;
-          }
-         
-        }
-      else if (turnToSend == UPDATE_PING)
-        {
-          char str_depthSeafloor[8]; // Depth
-          for (int i = 0; i < 8; i++) {
-            dtostrf(depthSeafloor, 2, 2, str_depthSeafloor);
-          }
-          char bigstring2[32] = "";
-          strcat(bigstring2, n);
-          strcat(bigstring2, str_depthSeafloor);
-          strcat(bigstring2, k);
-          Serial.println(bigstring2);
-          turnToSend = UPDATE_PITCH;
-          previousMillis = currentMillis;
-          updateImuData();
-        }
+    if (turnToSend == UPDATE_DEPTH)
+    {
+      char str_depth[6]; // Depth
+      for (int i = 0; i < 6; i++) {
+        dtostrf(depth, 1, 1, str_depth);
+      }
+      char string_to_rpi[32] = "";
+      strcat(string_to_rpi, a);
+      strcat(string_to_rpi, str_depth);
+      strcat(string_to_rpi, k);
+      Serial.println(string_to_rpi);
+      turnToSend = UPDATE_PING;
 
-        else if (turnToSend == UPDATE_PITCH)
-        {
-          
-          
-          if (abs(pitch) == 180) {
-            pitch = 0;
-          }
-          else if (pitch <= 0) {
-            pitch = pitch + 180;
-          } else {
-            pitch = pitch - 180;
-          }
-          
-          Serial.print(F("<pitch: "));
-          Serial.print(pitch);
-          Serial.println(F(">"));
-          turnToSend = UPDATE_ROLL;
-          previousMillis = currentMillis;
+      previousMillis = currentMillis;
+      while (!ping.update()) {
+        Serial.println(F("Ping device update failed"));
+      }
+      byte ping_confidence = ping.confidence();
+      if (ping.confidence() > 85) {
+        depthSeafloor = (ping.distance() / float(1000)) + depth_beneath_rov_offset  ;
+      } else {
+        depthSeafloor = -1;
+      }
 
-        }
-      else if (turnToSend == UPDATE_ROLL)
-        {
-          
-          Serial.print(F("<roll: "));
-          Serial.print((roll));
-          Serial.println(F(">"));
-          turnToSend = UPDATE_ACCELERATION;
-          previousMillis = currentMillis;
-
-
-        }
-      else if (turnToSend == UPDATE_ACCELERATION)
-        {
-          Serial.print(F("<vertical_acceleration: "));
-          Serial.print(getVerticalAcceleration(roll, pitch, x, y, z));
-          Serial.println(F(">"));
-          turnToSend = UPDATE_YAW;
-          previousMillis = currentMillis;
-          sensor.read();
-          depth = sensor.depth() + depth_rov_offset;
-          temp1 = sensor.temperature();
-          pressure = sensor.pressure();
-
-
-        }
-      else if (turnToSend == UPDATE_YAW)
-        {
-          Serial.print(F("<yaw: "));
-          Serial.print((yaw));
-          Serial.println(F(">"));
-          turnToSend = UPDATE_TEMP;
-          previousMillis = currentMillis;
-
-        }
-      else if (turnToSend == UPDATE_TEMP)
-        {
-          //Changes between sending temperatur and pressure(since it is only used for visualisation in the GUI)
-          if (tempPress) {
-            char str_pressure[6]; // Depth
-            for (int i = 0; i < 6; i++) {
-              dtostrf(pressure, 4, 2, str_pressure);
-            }
-            char bigstring3[32] = "";
-            strcat(bigstring3, b);
-            strcat(bigstring3, str_pressure);
-            strcat(bigstring3, k);
-            Serial.println(bigstring3);
-            tempPress = false;
-          } else {
-            char str_temp[4]; // Depth
-            for (int i = 0; i < 4; i++) {
-              dtostrf(temp1, 1, 1, str_temp);
-            }
-            char bigstring4[32] = "";
-            strcat(bigstring4, c);
-            strcat(bigstring4, str_temp);
-            strcat(bigstring4, k);
-            Serial.println(bigstring4);
-            tempPress = true;
-          }
-          previousMillis = currentMillis;
-          turnToSend = UPDATE_DEPTH;
-
-        }
-        
-     previousMillis = millis();
     }
+    else if (turnToSend == UPDATE_PING)
+    {
+      char str_depthSeafloor[8]; // Depth
+      for (int i = 0; i < 8; i++) {
+        dtostrf(depthSeafloor, 2, 2, str_depthSeafloor);
+      }
+      char string_to_rpi2[32] = "";
+      strcat(string_to_rpi2, n);
+      strcat(string_to_rpi2, str_depthSeafloor);
+      strcat(string_to_rpi2, k);
+      Serial.println(string_to_rpi2);
+      turnToSend = UPDATE_PITCH;
+      previousMillis = currentMillis;
+      updateImuData();
+    }
+
+    else if (turnToSend == UPDATE_PITCH)
+    {
+
+
+
+
+      Serial.print(F("<pitch: "));
+      Serial.print(pitch);
+      Serial.println(F(">"));
+      turnToSend = UPDATE_ROLL;
+      previousMillis = currentMillis;
+
+    }
+    else if (turnToSend == UPDATE_ROLL)
+    {
+
+      Serial.print(F("<roll: "));
+      Serial.print((roll));
+      Serial.println(F(">"));
+      turnToSend = UPDATE_ACCELERATION;
+      previousMillis = currentMillis;
+
+
+    }
+    else if (turnToSend == UPDATE_ACCELERATION)
+    {
+      Serial.print(F("<vertical_acceleration: "));
+      Serial.print(getVerticalAcceleration(roll, pitch, x, y, z));
+      Serial.println(F(">"));
+      turnToSend = UPDATE_YAW;
+      previousMillis = currentMillis;
+      sensor.read();
+      depth = sensor.depth() + depth_rov_offset;
+      temp1 = sensor.temperature();
+      pressure = sensor.pressure();
+
+
+    }
+    else if (turnToSend == UPDATE_YAW)
+    {
+      Serial.print(F("<yaw: "));
+      Serial.print((yaw));
+      Serial.println(F(">"));
+      turnToSend = UPDATE_TEMP;
+      previousMillis = currentMillis;
+
+    }
+    else if (turnToSend == UPDATE_TEMP)
+    {
+      //Changes between sending temperatur and pressure(since it is only used for visualisation in the GUI)
+      if (tempPress) {
+        char str_pressure[6]; // Depth
+        for (int i = 0; i < 6; i++) {
+          dtostrf(pressure, 4, 2, str_pressure);
+        }
+        char string_to_rpi3[32] = "";
+        strcat(string_to_rpi3, b);
+        strcat(string_to_rpi3, str_pressure);
+        strcat(string_to_rpi3, k);
+        Serial.println(string_to_rpi3);
+        tempPress = false;
+      } else {
+        char str_temp[4]; // Depth
+        for (int i = 0; i < 4; i++) {
+          dtostrf(temp1, 1, 1, str_temp);
+        }
+        char string_to_rpi4[32] = "";
+        strcat(string_to_rpi4, c);
+        strcat(string_to_rpi4, str_temp);
+        strcat(string_to_rpi4, k);
+        Serial.println(string_to_rpi4);
+        tempPress = true;
+      }
+      previousMillis = currentMillis;
+      turnToSend = UPDATE_DEPTH;
+
+    }
+
+    previousMillis = millis();
+  }
 
 
 }
@@ -314,7 +316,17 @@ void updateImuData() {
   if (dof.accelGetOrientation(&accel_event, &orientation)) {
     pitch  = -alpha * orientation.roll + (1 - alpha) * previous_roll;
     previous_pitch = roll;
-    roll  = alpha * orientation.pitch + (1 - alpha) * previous_pitch;
+    roll = orientation.pitch;
+
+          if (abs(pitch) == 180) {
+        pitch = 0;
+      }
+      else if (pitch <= 0) {
+        pitch = pitch + 180;
+      } else {
+        pitch = pitch - 180;
+      }
+    roll  = alpha * roll + (1 - alpha) * previous_pitch;
     previous_roll = pitch;
     x  = beta * accel_event.acceleration.x + (1 - beta) * previous_x;
     y  = beta * accel_event.acceleration.y + (1 - beta) * previous_y;
@@ -322,8 +334,12 @@ void updateImuData() {
     previous_x = x;
     previous_y = y;
     previous_z = z;
-    yaw = orientation.heading;
-    
+
+  }
+  if (dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
+  {
+    yaw = alpha * orientation.heading + (1 - alpha) * previous_yaw;
+    previous_yaw = yaw;
   }
 }
 

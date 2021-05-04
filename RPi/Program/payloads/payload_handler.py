@@ -78,9 +78,9 @@ class PayloadHandler(Thread):
 
 
             if payload_type == 'settings':
-                if payload_data[0] == 'arduino sensor':
+                if payload_data[0] == 'arduino_sensor':
                     self.command_queue.put('arduino_sensor:' + payload_data[1] + ':' + payload_data[2])
-                if payload_data[0] == 'arduino stepper':
+                if payload_data[0] == 'arduino_stepper':
                     self.command_queue.put('arduino_stepper:' + payload_data[1] + ':' + payload_data[2])
 
         except queue.Empty:
@@ -100,24 +100,4 @@ class PayloadHandler(Thread):
             pass
 
 if __name__ == '__main__':
-    sensor_list = []
-    start1 = False
-    sensor_list.append('fuck : 8')
-    queue = deque()
-
-    payload = PayloadHandler(sensor_list, queue, start1)
-
-    payload.message_queue.append(json.loads(json.dumps(
-        {
-            "payload_name": "commands",
-            "payload_data": [
-                {
-                    "name": "start",
-                    "value": 0.00,
-                    "test": 123
-                }
-            ]
-        }
-    )
-    ))
-    payload.run()
+    pass
