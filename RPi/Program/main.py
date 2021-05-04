@@ -23,6 +23,10 @@ thread_running_event = Event()
 payload_handler = PayloadHandler(sensor_list, arduino_command_queue, gui_command_queue,
                                  seafloor_sonar_queue, new_set_point_event,
                                  start_event, stop_event)
+
+payload_writer = PayloadWriter(sensor_list, gui_command_queue, thread_running_event)
+serial_handler = SerialHandler(sensor_list, arduino_command_queue, gui_command_queue,
+                                       set_point_queue, rov_depth_queue, thread_running_event)
 sea_floor_tracker = SeafloorTracker(150, 20, 20, 6, 10, seafloor_sonar_queue, new_set_point_event, set_point_queue)
 
 payload_handler.daemon = True
