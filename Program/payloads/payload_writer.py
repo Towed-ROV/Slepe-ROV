@@ -1,21 +1,24 @@
 import json
 import time
+import queue
 from send_and_receive.message_dispatcher import MessageDispatcher
 from threading import Thread
-import queue
 from multiprocessing import Queue
+
+
 class PayloadWriter(Thread):
-    def __init__(self, sensor_list, gui_command_queue):
+    def __init__(self, sensor_list, gui_command_queue, thread_running_event):
         Thread.__init__(self)
         self.sensor_list = sensor_list
         self.message_queue = Queue()
         self.gui_command_queue = gui_command_queue
         self.message_dispatcher = MessageDispatcher(self.message_queue)
         self.interval = 0.1
+        self.thread_running_event = thread_running_event
 
     def run(self):
         previousMillis = 0
-        while True:
+        while self.thread_running_event.is_set():
             self.__add_commands_to_queue()
             self.message_dispatcher.publish()
             currentMillis  = time.monotonic()

@@ -1,7 +1,8 @@
 import glob
 import serial
-from time import sleep 
 import sys
+from time import sleep 
+
 
 class SerialFinder:
     def __init__(self):

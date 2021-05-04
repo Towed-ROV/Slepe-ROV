@@ -1,4 +1,6 @@
 import pigpio
+
+
 class GPIOWriter:
     def __init__(self):
 

@@ -1,7 +1,8 @@
-from time import time
-
 import zmq
 import queue
+from time import time
+
+
 class MessageDispatcher():
     def __init__(self, data_queue):
         self.ip = 'tcp://192.168.0.102:8765'

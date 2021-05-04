@@ -1,14 +1,15 @@
+import queue
+import json
 from send_and_receive.message_receiver import MessageReceiver
 from send_and_receive.command_receiver import CommandReceiver
 from payloads.payload_reader import PayloadReader
 from GPIO_writer import GPIOWriter
-import queue
-import json
 from threading import Thread
 from multiprocessing import Queue
 
 class PayloadHandler(Thread):
-    def __init__(self, sensor_list, command_queue, gui_command_queue, seafloor_sonar_queue, flag_queue):
+    def __init__(self, sensor_list, command_queue, gui_command_queue, seafloor_sonar_queue, new_set_point_event,
+                 start_event, stop_event):
         """
         Handles
         :param sensor_list:
@@ -28,9 +29,10 @@ class PayloadHandler(Thread):
         self.command_queue = command_queue
         self.gpio_writer = GPIOWriter()
         self.payload_reader = PayloadReader()
-        self.start_rov = 1
+        self.start_event = start_event
+        self.stop_event = stop_event
         self.seafloor_sonar_queue = seafloor_sonar_queue
-        self.flag_queue = flag_queue
+        self.new_set_point_event = new_set_point_event
         self.depth_or_seafloor = "" # dont know where to send yet, due to the seafloor tracking not implemented.
         self.commands_to_serial = ['com_port_search', 'reset', 'pid_depth_p', 'pid_depth_i',
                                    'pid_depth_d', 'pid_roll_p','pid_roll_i', 'pid_roll_d',
@@ -53,7 +55,10 @@ class PayloadHandler(Thread):
                 if payload_data[0] in self.commands_to_serial:
                     self.command_queue.put(str(payload_data[0]) + ':' + str(payload_data[1]))
                 elif payload_data[0] == 'start_system':
-                    self.start_rov = payload_data[1]
+                    if payload_data[1] == True:
+                        self.start_event.set()
+                    elif payload_data[1] == False:
+                        self.stop_event.set()
                     self.gui_command_queue.put(str(payload_data[0]) + ':' + str(payload_data[1]))
                 elif payload_data[0] == 'brightness_light':
                     print("light")
@@ -69,7 +74,8 @@ class PayloadHandler(Thread):
                 elif payload_data[0] == "depth_beneath_boat":
                     self.seafloor_sonar_queue.put(payload_data[1])
                 elif payload_data[0] == "has_traveled_set_distance":
-                    self.flag_queue.put(payload_data[1])
+                    self.new_set_point_event.set()
+
 
             if payload_type == 'settings':
                 if payload_data[0] == 'arduino sensor':

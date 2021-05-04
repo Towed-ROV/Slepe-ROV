@@ -1,8 +1,7 @@
-from threading import Thread
-from time import time
-
 import serial
 import queue
+from threading import Thread
+from time import time
 
 ENCODING = 'utf-8'
 TERMINATOR = ':'

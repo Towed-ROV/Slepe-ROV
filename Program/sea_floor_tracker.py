@@ -6,15 +6,13 @@ when a new set point is created, the set_point is sent to the optimal path algor
 """
 import numpy as np
 from threading import Thread
-import queue
-from multiprocessing import Queue
 from time import sleep
 
 
 
 class SeafloorTracker(Thread):
-    def __init__(self, length_rope=300, desired_distance=20, min_dist=14, dist_to_skip=6,
-                 depth_of_rov=10, depth_beneath_boat=queue.Queue(), flag_queue=queue.Queue(), set_point_queue=Queue()):
+    def __init__(self, length_rope, desired_distance, min_dist, dist_to_skip,
+                 depth_of_rov, depth_beneath_boat, new_set_point_event, set_point_queue):
         Thread.__init__(self)
         self.length_rope = length_rope
         self.desired_distance = desired_distance
@@ -26,24 +24,19 @@ class SeafloorTracker(Thread):
         self.set_points = np.zeros([round(length_rope / 10)])
         self.depths_of_rov = depth_of_rov
         self.depths_beneath_boat = depth_beneath_boat
-        self.flag = flag_queue
+        self.new_set_point_event = new_set_point_event
         self.set_point_queue = set_point_queue
 
     def run(self):
         while True:
-            flag = False
-            try:
-                flag = self.flag.get(timeout=0.05)
-            except queue.Empty:
-                pass
-            if flag == True:
+            if self.new_set_point_event.is_set():
                 depths_beneath_rov = np.array(self.depths_beneath_boat.queue)
                 depths_of_rov = self.depths_of_rov
                 with self.depths_beneath_boat.mutex:
                     self.depths_beneath_boat.queue.clear()
                 print("ok")
                 self.set_point_queue.put(self.get_set_point(depths_beneath_rov, depths_of_rov))
-                flag = False
+                self.new_set_point_event.clear()
 
     def get_set_point(self, sonar_values, depth_rov):
         """[summary]

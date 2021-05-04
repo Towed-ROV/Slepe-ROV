@@ -1,14 +1,16 @@
 import threading
-
+import queue
 from Serial_communication.serial1 import SerialWriterReader
 from Serial_communication.serial_finder import SerialFinder
-import queue
 from multiprocessing import Queue, Process
 from threading import Thread
 from Serial_communication.handle_writer_queue import HandleWriterQueue
 from Serial_communication.serial_message_recived_handler import SerialMessageRecivedHandler
+
+
 class SerialHandler(Thread):
-    def __init__(self, sensor_list, arduino_command_queue, gui_command_queue, set_point_queue, rov_depth_queue):
+    def __init__(self, sensor_list, arduino_command_queue, gui_command_queue, set_point_queue, rov_depth_queue,
+                 thread_running_event):
         """
 
         :param sensor_list: list of all sensor connected
@@ -28,6 +30,7 @@ class SerialHandler(Thread):
         self.com_port_found = False
         self.set_point_queue = set_point_queue
         self.rov_depth_queue = rov_depth_queue
+        self.thread_running_event = thread_running_event
         self.VALID_SENSOR_LIST = ['depth', 'pressure', 'temperature',
                                   'wing_pos_port', 'wing_pos_sb',
                                   'yaw', 'roll', 'pitch', 'depth_beneath_rov',
@@ -40,7 +43,7 @@ class SerialHandler(Thread):
                                                      self.writer_queue_sensor_arduino, self.writer_queue_stepper_arduino,
                                                      self.from_arduino_to_arduino_queue, set_point_queue, rov_depth_queue)
     def run(self):
-        while True:
+        while self.thread_running_event.is_set():
             if not self.com_port_found:
                 self.__close_threads()
                 self.com_port_found = self.__find_com_ports()
@@ -50,6 +53,7 @@ class SerialHandler(Thread):
             while self.com_port_found:
                 test = self.handle_writer_queue.put_in_writer_queue()
                 self.com_port_found = test
+        self.com_port_found = False
 
 #todo active threads list
     def __close_threads(self):

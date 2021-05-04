@@ -1,6 +1,8 @@
 import json
 import zmq
 from threading import Thread
+
+
 class MessageReceiver(Thread):
     def __init__(self, queue):
         Thread.__init__(self)
