@@ -11,7 +11,7 @@ class CommandReceiver(Thread):
         self.ctx = zmq.Context()
         self.connection = self.ctx.socket(zmq.REP)
         self.cmd_queue = cmd_queue
-        self.ip = 'tcp://192.168.0.102:8767'
+        self.ip = 'tcp://127.0.0.1:6969'
 
     def bind(self):
         self.connection.bind(self.ip)

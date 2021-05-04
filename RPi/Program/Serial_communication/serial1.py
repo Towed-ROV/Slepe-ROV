@@ -90,6 +90,7 @@ class SerialWriterReader(Thread):
                                                 replace(START_CHAR, "").\
                                                 replace(END_CHAR, "").\
                                                 replace(" ", "")
+        print(message_received)
         return message_received
 
     def __read_incoming_data(self):
