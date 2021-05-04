@@ -28,7 +28,7 @@ class SerialFinder:
                 # if 'dev' in key:
                 serial_port = serial.Serial(key, self.baud_rate, timeout=1,
                                             stopbits=1, bytesize=8)
-#                 serial_port.write("<start:True>".encode('utf-8'))
+                serial_port.write("<reset:True>".encode('utf-8'))
                 print(key)
                 print(self.baud_rate)
                 try:
