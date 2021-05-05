@@ -30,8 +30,8 @@ class SerialMessageRecivedHandler(Thread):
                 received_message = self.message_queue.get(timeout=0.01)
                 counter_sent = counter_sent + 1
                 # print(received_message)
-                message = received_message.split(':',1)
-                if message[0] in  self.valid_commands:
+                message = received_message.split(':', 1)
+                if message[0] in self.valid_commands:
                     print("----------------------")
                     print(received_message)
                     print("----------------------")
@@ -39,7 +39,7 @@ class SerialMessageRecivedHandler(Thread):
                 else:
                     self.__add_sensor(message)
             except queue.Empty:
-                counter_skip = counter_skip +1
+                counter_skip = counter_skip + 1
             except ValueError:
                 pass
 
@@ -52,10 +52,10 @@ class SerialMessageRecivedHandler(Thread):
         """
         if ('IMU' or 'sensorArduino' or 'stepperArduino') in message[0]:
             pass
-        
+
         else:
             try:
-#                 print(message)
+                #                 print(message)
                 name = message[0]
                 value = float(message[1])
                 # if name == 'depth':
@@ -70,6 +70,8 @@ class SerialMessageRecivedHandler(Thread):
                         self.sensor_list.append(sensor)
             except IndexError:
                 pass
+
+
 if __name__ == '__main__':
     q1 = queue.Queue()
     q2 = queue.Queue()

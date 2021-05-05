@@ -1,7 +1,7 @@
 import glob
 import serial
 import sys
-from time import sleep 
+from time import sleep
 
 
 class SerialFinder:
@@ -17,7 +17,6 @@ class SerialFinder:
         """
         search_runs = 0
         port_names = self.get_available_com_ports()
-        print(port_names)
         while search_runs != 2:
             if search_runs == 0:
                 self.baud_rate = 57600
@@ -28,17 +27,14 @@ class SerialFinder:
                 # if 'dev' in key:
                 serial_port = serial.Serial(key, self.baud_rate, timeout=1,
                                             stopbits=1, bytesize=8)
-#                 serial_port.write("<start:True>".encode('utf-8'))
-                print(key)
-                print(self.baud_rate)
+                serial_port.write("<reset:True>".encode('utf-8'))
                 try:
                     sleep(2)
                     if serial_port.in_waiting:
                         message_received = serial_port.readline()
                         if message_received:
-                            print(message_received,'stig')
                             message_received = message_received.strip().decode('utf-8').split(self.seperation_char)
-#                             print(message_received,'kato')
+                            #                             print(message_received,'kato')
                             port_name = message_received[0].replace('<', '')
                             if 'IMU' in port_name and self.baud_rate == 57600:
                                 self.port_name_list[key] = 'IMU'
@@ -111,8 +107,3 @@ class SerialFinder:
         #     print('There are no serial-ports available')
         # port_names = list(dict.fromkeys(port_names))
         # return list(port_names)
-
-
-
-
-

@@ -27,11 +27,12 @@ if __name__ =="__main__":
     payload_writer = PayloadWriter(sensor_list, gui_command_queue, thread_running_event)
     serial_handler = SerialHandler(sensor_list, arduino_command_queue, gui_command_queue,
                                    set_point_queue, rov_depth_queue, thread_running_event)
-    sea_floor_tracker = SeafloorTracker(150, 20, 20, 6, 10, seafloor_sonar_queue, new_set_point_event, set_point_queue)
+    sea_floor_tracker = SeafloorTracker(300, 45, 20, 6, 10, seafloor_sonar_queue, new_set_point_event, set_point_queue)
 
     payload_handler.daemon = True
     payload_handler.start()
-
+    sea_floor_tracker.daemon= True
+    sea_floor_tracker.start()
     def __start_communication_threads():
         try:
             thread_running_event.set()

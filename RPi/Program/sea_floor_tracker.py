@@ -29,14 +29,17 @@ class SeafloorTracker(Thread):
 
     def run(self):
         while True:
-            if self.new_set_point_event.is_set():
-                depths_beneath_rov = np.array(self.depths_beneath_boat.queue)
-                depths_of_rov = self.depths_of_rov
-                with self.depths_beneath_boat.mutex:
-                    self.depths_beneath_boat.queue.clear()
-                print("ok")
-                self.set_point_queue.put(self.get_set_point(depths_beneath_rov, depths_of_rov))
-                self.new_set_point_event.clear()
+            try:
+                if self.new_set_point_event.is_set():
+                    depths_beneath_rov = np.array(self.depths_beneath_boat.queue)
+                    depths_of_rov = self.depths_of_rov
+                    with self.depths_beneath_boat.mutex:
+                        self.depths_beneath_boat.queue.clear()
+                    print("ok")
+                    self.set_point_queue.put(self.get_set_point(depths_beneath_rov, depths_of_rov))
+                    self.new_set_point_event.clear()
+            except Exception:
+                continue
 
     def get_set_point(self, sonar_values, depth_rov):
         """[summary]
