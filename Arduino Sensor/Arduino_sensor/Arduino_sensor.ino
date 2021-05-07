@@ -24,8 +24,8 @@ float pressure = 0.00;
 float depthSeafloor = 0.00;
 float temp1 = 0.00;
 float q = 0.1;
-double depth_rov_offset = 0.0;
-double depth_beneath_rov_offset = 0.0;
+float depth_rov_offset = 0.0;
+float depth_beneath_rov_offset = 0.0;
 boolean kalmanOnOff = true;
 String dataString = "";
 String s;
@@ -55,10 +55,10 @@ char * c = "<temperature:";
 char* n = "<depth_beneath_rov:";
 char* k = ">";
 
-const long interval = 20;
+const long transmit_interval = 20;
 unsigned long previousMillis = 0;
-const long interval1 = 250;
-unsigned long previousMillis1 = 0;
+
+unsigned long previous_imu_update = 0;
 String inputString = "";
 bool stringComplete = false;
 
@@ -66,10 +66,13 @@ bool stringComplete = false;
 Adafruit_9DOF                dof   = Adafruit_9DOF();
 Adafruit_LSM303_Accel_Unified accel = Adafruit_LSM303_Accel_Unified(30301);
 Adafruit_LSM303_Mag_Unified   mag   = Adafruit_LSM303_Mag_Unified(30302);
-float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
+Adafruit_L3GD20_Unified gyro = Adafruit_L3GD20_Unified(20);
 
-float alpha = 0.2;
-float beta = 0.2;
+float pitch_gyro;
+float roll_gyro;
+float yaw_gyro;
+float alpha = 0.94;
+float beta = 0.05;
 float previous_roll = 0;
 float previous_pitch = 0;
 float previous_yaw = 0;
@@ -77,12 +80,18 @@ float previous_x = 0;
 float previous_y = 0;
 float previous_z = 0;
 
+float pitch_acc = 0;
+float roll_acc = 0;
+float yaw_acc = 0;
+
 float pitch = 0.00;
 float roll = 0.00;
 float x = 0;
 float y = 0;
 float z = 0;
 float yaw = 0;
+
+int count = 0;
 void initSensors()
 {
   if (!accel.begin())
@@ -100,12 +109,14 @@ void initSensors()
 }
 
 
+
+
 void setup() {
   // Use 9600 bits per second to communicate with the Ping dev  ice
   Serial3.begin(9600);
 
   // Use built in Serial port to communicate with the Arduino IDE Serial Monitor
-  Serial.begin(115200);
+  Serial.begin(57600);
   Serial.println("<SensorArduino:0>");  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(D2, OUTPUT);
   pinMode(D3, OUTPUT);
@@ -127,6 +138,15 @@ void setup() {
   sensor.setModel(MS5837::MS5837_30BA);
   sensor.setFluidDensity(1029); // kg/m^3 (freshwater, 1029 for seawater)
   initSensors();
+  gyro.enableAutoRange(true);
+
+  /* Initialise the sensor */
+  if (!gyro.begin())
+  {
+    /* There was a problem detecting the L3GD20 ... check your connections */
+    Serial.println("Ooops, no L3GD20 detected ... Check your wiring!");
+    while (1);
+  }
 
   sensors_event_t accel_event;
   sensors_event_t mag_event;
@@ -137,19 +157,20 @@ void setup() {
     previous_x = accel_event.acceleration.x;
     previous_y = accel_event.acceleration.y;
     previous_z = accel_event.acceleration.z;
-    previous_roll = orientation.roll;
-    previous_pitch = orientation.pitch;
+    roll_gyro = orientation.roll;
+    pitch_gyro = orientation.pitch;
   }
   if (dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
   {
 
-    previous_yaw = orientation.heading;
+    yaw_gyro = orientation.heading;
   }
   while (!Serial) {
     //wait to connect
   }
 
   delay(2000);
+  previous_imu_update = millis();
 }
 
 void loop() {
@@ -174,9 +195,17 @@ void loop() {
   //read sensor data and sends as char array one at a time
   unsigned long currentMillis = millis();
   unsigned long dt = currentMillis - previousMillis ;
-  if (dt > interval) {
+  if (dt > transmit_interval) {
 
-
+    if (count > 500) {
+        pitch_gyro = pitch_acc;
+        roll_gyro = roll_acc;
+        yaw_gyro = yaw_acc;
+        count = 0;
+      }
+      float dt_imu = millis() - previous_imu_update;
+      updateImuData(dt_imu);      
+      previous_imu_update = millis();
     // reads sensor data
 
 
@@ -218,7 +247,8 @@ void loop() {
       Serial.println(string_to_rpi2);
       turnToSend = UPDATE_PITCH;
       previousMillis = currentMillis;
-      updateImuData();
+      count ++;
+      
     }
 
     else if (turnToSend == UPDATE_PITCH)
@@ -228,7 +258,7 @@ void loop() {
 
 
       Serial.print(F("<pitch: "));
-      Serial.print(pitch);
+      Serial.print(roll);
       Serial.println(F(">"));
       turnToSend = UPDATE_ROLL;
       previousMillis = currentMillis;
@@ -236,9 +266,16 @@ void loop() {
     }
     else if (turnToSend == UPDATE_ROLL)
     {
-
+          if (abs(pitch) == 180) {
+      pitch = 0;
+    }
+    else if (pitch <= 0) {
+      pitch = pitch + 180;
+    } else {
+      pitch = pitch - 180;
+    }
       Serial.print(F("<roll: "));
-      Serial.print((roll));
+      Serial.print((-pitch)); //+6.5
       Serial.println(F(">"));
       turnToSend = UPDATE_ACCELERATION;
       previousMillis = currentMillis;
@@ -307,27 +344,66 @@ void loop() {
 
 
 
-void updateImuData() {
+//void updateImuData() {
+//  sensors_event_t accel_event;
+//  sensors_event_t mag_event;
+//  sensors_vec_t   orientation;
+//  accel.getEvent(&accel_event);
+//  mag.getEvent(&mag_event);
+//  if (dof.accelGetOrientation(&accel_event, &orientation)) {
+//    pitch  = -alpha * orientation.roll + (1 - alpha) * previous_roll;
+//    previous_pitch = roll;
+//    roll = orientation.pitch;
+//
+//    if (abs(pitch) == 180) {
+//      pitch = 0;
+//    }
+//    else if (pitch <= 0) {
+//      pitch = pitch + 180;
+//    } else {
+//      pitch = pitch - 180;
+//    }
+//    roll  = alpha * roll + (1 - alpha) * previous_pitch;
+//    previous_roll = pitch;
+//    x  = beta * accel_event.acceleration.x + (1 - beta) * previous_x;
+//    y  = beta * accel_event.acceleration.y + (1 - beta) * previous_y;
+//    z  = beta * accel_event.acceleration.z + (1 - beta) * previous_z;
+//    previous_x = x;
+//    previous_y = y;
+//    previous_z = z;
+//
+//  }
+//  if (dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
+//  {
+//    yaw = alpha * orientation.heading + (1 - alpha) * previous_yaw;
+//    previous_yaw = yaw;
+//  }
+//}
+
+void updateImuData(unsigned long dt_imu) {
+  sensors_event_t event;
+  gyro.getEvent(&event);
+  dt_imu = 20;
+ 
+  double x_g =  (event.gyro.x +0.103667) * 180 / PI;
+  double y_g = (event.gyro.y - 0.028018) * 180 / PI;
+  double z_g = z = (event.gyro.z - 0.024099) * 180 / PI;
+  pitch_gyro = pitch + y_g * dt_imu * 0.001;
+  roll_gyro = roll + x_g * dt_imu * 0.001;
+  yaw_gyro = yaw + z_g * dt_imu * 0.001;
+
+  
+  sensors_vec_t   orientation;
   sensors_event_t accel_event;
   sensors_event_t mag_event;
-  sensors_vec_t   orientation;
+
   accel.getEvent(&accel_event);
   mag.getEvent(&mag_event);
-  if (dof.accelGetOrientation(&accel_event, &orientation)) {
-    pitch  = -alpha * orientation.roll + (1 - alpha) * previous_roll;
-    previous_pitch = roll;
-    roll = orientation.pitch;
-
-          if (abs(pitch) == 180) {
-        pitch = 0;
-      }
-      else if (pitch <= 0) {
-        pitch = pitch + 180;
-      } else {
-        pitch = pitch - 180;
-      }
-    roll  = alpha * roll + (1 - alpha) * previous_pitch;
-    previous_roll = pitch;
+  if (dof.accelGetOrientation(&accel_event, &orientation) && dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
+  {
+    pitch_acc = orientation.pitch;
+    roll_acc = orientation.roll;
+    yaw_acc = orientation.heading;
     x  = beta * accel_event.acceleration.x + (1 - beta) * previous_x;
     y  = beta * accel_event.acceleration.y + (1 - beta) * previous_y;
     z  = beta * accel_event.acceleration.z + (1 - beta) * previous_z;
@@ -336,14 +412,17 @@ void updateImuData() {
     previous_z = z;
 
   }
-  if (dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
-  {
-    yaw = alpha * orientation.heading + (1 - alpha) * previous_yaw;
-    previous_yaw = yaw;
-  }
+  pitch = complementary_filter(alpha, pitch_gyro, pitch_acc);
+  roll = complementary_filter(alpha, roll_gyro, roll_acc);
+  yaw = complementary_filter(alpha, yaw_gyro, yaw_acc);
+
 }
 
-
+float complementary_filter(float alpha, float first_value, float second_value) {
+  float filtered_value;
+  filtered_value  = alpha * first_value + (1 - alpha) * second_value;
+  return filtered_value;
+}
 
 
 /*
@@ -351,6 +430,7 @@ void updateImuData() {
 */
 
 float getVerticalAcceleration(float roll, float pitch, float x, float y, float z) {
+
   //the imu is rotated in the rov
   pitch = pitch * PI / 180;
   roll = roll * PI / 180;
@@ -386,11 +466,11 @@ void translateString(String s) {
   if (part01.equals("depth_rov_offset")) {
 
     responde("depth_rov_offset:True");
-    depth_rov_offset = part02.toDouble();
+    depth_rov_offset = part02.toFloat();
 
   }
   else if (part01.equals("depth_beneath_rov_offset")) {
-    depth_beneath_rov_offset = part02.toDouble();
+    depth_beneath_rov_offset = part02.toFloat();
     responde("depth_beneath_rov_offset:True");
   }
   else if (part01.equals("a0")) {
