@@ -6,6 +6,7 @@
 #include <Adafruit_LSM303_U.h>
 #include <Adafruit_L3GD20_U.h>
 #include <Adafruit_9DOF.h>
+#include <SimpleKalmanFilter.h>
 static const uint8_t arduinoRxPin = 15; //Serial1 rx
 static const uint8_t arduinoTxPin = 14; //Serial1 tx
 static Ping1D ping { Serial3 };
@@ -84,6 +85,10 @@ float accel_x = 0;
 float accel_y = 0;
 float accel_z = 0;
 float vertical_accel = 0;
+
+#simple kalman filter
+SimpleKalmanFilter pressureKalmanFilter(0.08, 1000, 0.01);
+
 
 
 int count = 0;
@@ -268,6 +273,7 @@ void loop() {
       sensor.read();
       depth = sensor.depth() + depth_rov_offset;
       temp1 = sensor.temperature();
+      pressure = pressureKalmanFilter.updateEstimate(sensor.pressure());
       pressure = sensor.pressure();
 
 
