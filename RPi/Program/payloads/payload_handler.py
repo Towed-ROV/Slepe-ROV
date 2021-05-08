@@ -1,8 +1,6 @@
 import queue
-import json
 from send_and_receive.message_receiver import MessageReceiver
 from send_and_receive.command_receiver import CommandReceiver
-from payloads.payload_reader import PayloadReader
 from GPIO_writer import GPIOWriter
 from threading import Thread
 from multiprocessing import Queue
@@ -11,7 +9,7 @@ class PayloadHandler(Thread):
     def __init__(self, sensor_list, command_queue, gui_command_queue, seafloor_sonar_queue, new_set_point_event,
                  start_event, stop_event):
         """
-        Handles
+        Handles every sensor data or request from the onshore suitcase RPi or laptop
         :param sensor_list:
         :param command_queue:
         """
@@ -28,7 +26,6 @@ class PayloadHandler(Thread):
         self.gui_command_queue = gui_command_queue
         self.command_queue = command_queue
         self.gpio_writer = GPIOWriter()
-        self.payload_reader = PayloadReader()
         self.start_event = start_event
         self.stop_event = stop_event
         self.seafloor_sonar_queue = seafloor_sonar_queue
@@ -50,7 +47,7 @@ class PayloadHandler(Thread):
         takes the received payload and reads it and either handles it or forwards it to the serial output queue
         """
         try:
-            payload_type, payload_names, payload_data = self.payload_reader.read_payload(self.message_queue.get(timeout=0.001))
+            payload_type, payload_names, payload_data = self.read_payload(self.message_queue.get(timeout=0.001))
             if payload_type == 'commands':
                 if payload_data[0] in self.commands_to_serial:
                     self.command_queue.put(str(payload_data[0]) + ':' + str(payload_data[1]))
@@ -75,8 +72,6 @@ class PayloadHandler(Thread):
                     self.seafloor_sonar_queue.put(payload_data[1])
                 elif payload_data[0] == "has_traveled_set_distance":
                     self.new_set_point_event.set()
-
-
             if payload_type == 'settings':
                 if payload_data[0] == 'arduino_sensor':
                     self.command_queue.put('arduino_sensor:' + payload_data[1] + ':' + payload_data[2])
@@ -98,6 +93,23 @@ class PayloadHandler(Thread):
                     pass
         except RuntimeError:
             pass
+
+    def read_payload(self, received_data):
+        """
+        extracts data from message received
+        :param received_data: data received from zmq
+        :return: the data type and the data of the payload
+        """
+        payload_type = received_data['payload_name']
+        data = received_data['payload_data']
+        keys= []
+        values = []
+        for k in data:
+            size = len(k)
+            for key, value in k.items():
+                keys.append(key)
+                values.append(value)
+        return payload_type, keys, values
 
 if __name__ == '__main__':
     pass

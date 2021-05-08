@@ -5,6 +5,9 @@ from time import sleep
 
 
 class SerialFinder:
+    """
+    Finding all available serial ports and check each if they are the correct one and returns a list of these.
+    """
     def __init__(self):
         self.port_name_list = {}
         self.seperation_char = ':'
@@ -68,8 +71,8 @@ class SerialFinder:
 
     def get_available_com_ports(self):
         """
-        find all available com port on rpi
-        :return: dict with all com ports on rpi
+        find all available com port on Windows or linux systems
+        :return: dict with all com ports
         """
 
         if sys.platform.startswith('win'):
@@ -91,26 +94,7 @@ class SerialFinder:
             except (OSError, serial.SerialException):
                 pass
         return result
-        # ports = glob.glob('/dev/tty[A-Za-z]*')
-        # port_names = []
-        # port_exceptions = ['dev/ttyprintk']
-        # i = 0
-        # while i < 3:
-        #     for port in port_exceptions:
-        #         if port in ports:
-        #             ports.remove(port)
-        #     for port in ports:
-        #         try:
-        #             s = serial.Serial(port, self.baud_rate, timeout=0)
-        #             port_names.append(port)
-        #         except (OSError, serial.SerialException):
-        #             pass
-        #         sleep(0.2)
-        #     i = i + 1
-        # if not port_names:
-        #     print('There are no serial-ports available')
-        # port_names = list(dict.fromkeys(port_names))
-        # return list(port_names)
+
 
 
 

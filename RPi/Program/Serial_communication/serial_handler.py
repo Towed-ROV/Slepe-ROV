@@ -55,7 +55,6 @@ class SerialHandler(Thread):
                 self.com_port_found = test
         self.com_port_found = False
 
-#todo active threads list
     def __close_threads(self):
         for thread in self.serial_threads:
             thread.stop_thread()

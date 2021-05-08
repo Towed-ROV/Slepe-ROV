@@ -4,7 +4,9 @@ from threading import Thread
 
 
 class CommandReceiver(Thread):
-    """ DOCS """
+    """
+    ZMQ reply socket to receive request from the onshore computer
+    """
 
     def __init__(self, cmd_queue):
         Thread.__init__(self)

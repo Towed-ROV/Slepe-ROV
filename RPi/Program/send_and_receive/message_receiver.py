@@ -4,6 +4,12 @@ from threading import Thread
 
 
 class MessageReceiver(Thread):
+    """ZMQ subscriber running in a seperate thread to poll data from the onshore RPi in suitcase.
+
+    SUB / PUB is connectionless, so it doesnt care if you disconnect, it will
+    continously try to re-read from the socket. So any disconnect / reloads or similar doesnt matter,
+    because the subscriber will always listen for reconnects
+    """
     def __init__(self, queue):
         Thread.__init__(self)
         self.ip = 'tcp://192.168.0.110:8765'
