@@ -100,7 +100,7 @@ void initSensors()
     /* There was a problem detecting the LSM303 ... check your connections */
     Serial.println(F("Ooops, no LSM303 detected ... Check your wiring!"));
     while (1);
-  }  
+  }
   if (!gyro.begin())
   {
     /* There was a problem detecting the L3GD20 ... check your connections */
@@ -110,7 +110,7 @@ void initSensors()
 }
 
 void set_init_values()
-{  
+{
   sensors_event_t accel_event;
   sensors_event_t mag_event;
   sensors_vec_t   orientation;
@@ -156,7 +156,7 @@ void setup() {
   }
   Serial.println(F("Sensor initialized!"));
   sensor.setModel(MS5837::MS5837_30BA);
-  sensor.setFluidDensity(1029); // kg/m^3 (freshwater, 1029 for seawater)  
+  sensor.setFluidDensity(1029); // kg/m^3 (freshwater, 1029 for seawater)
   gyro.enableAutoRange(true);
   initSensors();
   set_init_values();
@@ -165,7 +165,7 @@ void setup() {
   }
 
   delay(500);
-  
+
 }
 
 void loop() {
@@ -190,15 +190,15 @@ void loop() {
   //read sensor data and sends as char array one at a time
   float dt_imu = millis() - previous_imu_update;
   if (dt_imu >= imu_intervall)
-      updateImuData(dt_imu);      
-      previous_imu_update = millis();
+    updateImuData(dt_imu);
+  previous_imu_update = millis();
 
   unsigned long currentMillis = millis();
   unsigned long dt = currentMillis - previousMillis ;
   if (dt > transmit_interval) {
 
-    
-      
+
+
     // reads sensor data
 
 
@@ -239,7 +239,7 @@ void loop() {
       Serial.println(string_to_rpi2);
       turnToSend = UPDATE_PITCH;
       previousMillis = currentMillis;
-      rotate_imu_measurements();      
+      rotate_imu_measurements();
     }
     else if (turnToSend == UPDATE_PITCH)
     {
@@ -250,9 +250,9 @@ void loop() {
       previousMillis = currentMillis;
     }
     else if (turnToSend == UPDATE_ROLL)
-    {    
+    {
       Serial.print(F("<roll: "));
-      Serial.print((roll)); 
+      Serial.print((roll));
       Serial.println(F(">"));
       turnToSend = UPDATE_ACCELERATION;
       previousMillis = currentMillis;
@@ -319,17 +319,17 @@ void loop() {
 }
 
 void updateImuData(unsigned long dt_imu) {
-  dt_imu = dt_imu*0.001;
+  dt_imu = dt_imu * 0.001;
   float pitch_acc = pitch;
   float roll_acc = roll;
   float yaw_acc = yaw;
 
   sensors_event_t event;
-  gyro.getEvent(&event);    
+  gyro.getEvent(&event);
   double pitch_gyro = (event.gyro.y - 0.028018) * 180 / PI;
-  double roll_gyro =  (event.gyro.x +0.103667) * 180 / PI;
+  double roll_gyro =  (event.gyro.x + 0.103667) * 180 / PI;
   double yaw_gyro = (event.gyro.z - 0.024099) * 180 / PI;
-  
+
   sensors_vec_t   orientation;
   sensors_event_t accel_event;
   sensors_event_t mag_event;
@@ -340,23 +340,23 @@ void updateImuData(unsigned long dt_imu) {
     pitch_acc = orientation.pitch;
     roll_acc = orientation.roll;
     yaw_acc = orientation.heading;
-    accel_x  = low_pass_filter(ALPHA_LP_FILTER,accel_event.acceleration.x,accel_x); 
-    accel_y  = low_pass_filter(ALPHA_LP_FILTER,accel_event.acceleration.y,accel_y);  
-    accel_z  = low_pass_filter(ALPHA_LP_FILTER,accel_event.acceleration.z,accel_z);  
-    
+    accel_x  = low_pass_filter(ALPHA_LP_FILTER, accel_event.acceleration.x, accel_x);
+    accel_y  = low_pass_filter(ALPHA_LP_FILTER, accel_event.acceleration.y, accel_y);
+    accel_z  = low_pass_filter(ALPHA_LP_FILTER, accel_event.acceleration.z, accel_z);
+
 
   }
-  pitch = complementary_filter(ALPHA_COMP_FILTER, pitch, pitch_gyro, pitch_acc,dt_imu);
+  pitch = complementary_filter(ALPHA_COMP_FILTER, pitch, pitch_gyro, pitch_acc, dt_imu);
   roll = complementary_filter(ALPHA_COMP_FILTER, roll, roll_gyro, roll_acc, dt_imu);
   yaw = complementary_filter(ALPHA_COMP_FILTER, yaw, yaw_gyro, yaw_acc, dt_imu);
 
 }
 
-float complementary_filter(float alpha, float prev_angle, float gyro_value, float accel_value, float dt) {  
+float complementary_filter(float alpha, float prev_angle, float gyro_value, float accel_value, float dt) {
   float filtered_value  = prev_angle + alpha * gyro_value * dt + (1 - alpha) * accel_value;
   return filtered_value;
 }
-float low_pass_filter(float alpha, float new_val, float prev_val){
+float low_pass_filter(float alpha, float new_val, float prev_val) {
   float filtered_value  = alpha * new_val + (1 - alpha) * prev_val;
   return filtered_value;
 }
@@ -370,8 +370,8 @@ float getVerticalAcceleration(float roll, float pitch, float accel_x, float acce
   //the imu is rotated in the rov
   pitch = pitch * PI / 180; //angles to radians
   roll = roll * PI / 180;
-//  roll += PI / 2; //rotate measured angles
-//  pitch += PI / 2;
+  //  roll += PI / 2; //rotate measured angles
+  //  pitch += PI / 2;
   float accel_vertical_x = accel_x * cos(pitch) * sin(roll) /
                            sqrt(cos(roll) * cos(roll) * sin(pitch) * sin(pitch) + sin(roll) * sin(roll));
   float accel_vertical_y = accel_y * sin(pitch) * cos(roll) /
@@ -381,18 +381,18 @@ float getVerticalAcceleration(float roll, float pitch, float accel_x, float acce
   return -accel_vertical_y - accel_vertical_x + accel_vertical_z + 10;
 }
 
-void rotate_imu_measurements(){
-  float remember_roll = roll;
-  if (abs(pitch) == 180) {
-      pitch = 0;
-    }
-    else if (pitch <= 0) {
-      pitch = pitch + 180;
-    } else {
-      pitch = pitch - 180;
-    }
-    roll_to_send = - pitch;
-    pitch_to_send = roll;    
+void rotate_imu_measurements() {
+  roll_to_send = - pitch;
+  pitch_to_send = roll;
+  if (abs(roll_to_send) == 180) {
+    roll_to_send = 0;
+  }
+  else if (roll_to_send <= 0) {
+    roll_to_send = roll_to_send + 180;
+  } else {
+    roll_to_send = roll_to_send - 180;
+  }
+
 }
 //separates string message
 String getValue(String data, char separator, int index) {
