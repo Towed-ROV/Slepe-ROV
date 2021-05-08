@@ -2,6 +2,9 @@ import pigpio
 
 
 class GPIOWriter:
+    """
+    Writes PWM signal to the GPIO output for controlling servo and lights.
+    """
     def __init__(self):
         self.pin_led_lights = 12
         self.pin_camera_tilt = 18
