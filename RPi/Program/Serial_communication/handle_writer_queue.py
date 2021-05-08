@@ -2,6 +2,9 @@ import queue
 
 
 class HandleWriterQueue:
+    """
+    Handle the data that is going to be sent to the Arduinos, and which Arduino it's going to.
+    """
     def __init__(self, reader_queue, writer_queue, writer_queue_IMU,
                  writer_queue_sensor_arduino, writer_queue_stepper_arduino,
                  from_arduino_to_arduino_queue, set_point_queue, rov_depth_queue):
@@ -21,7 +24,8 @@ class HandleWriterQueue:
 
     def put_in_writer_queue(self):
         """
-        sort message from serial writer queue to the specific writer queue.
+        Sort message from serial writer queue to the specific writer queue.
+        Also puts commands from GUI, Seafloor tracker to the correct Arduino.
         :return: a bool if com port need to be search after.
         """
 
