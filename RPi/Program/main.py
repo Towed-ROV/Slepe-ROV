@@ -7,19 +7,19 @@ from payloads.payload_handler import PayloadHandler
 from Serial_communication.serial_handler import SerialHandler
 from multiprocessing import Event, Queue
 
-arduino_command_queue = Queue()
-sensor_list = []
-gui_command_queue = Queue()
-seafloor_sonar_queue = queue.Queue()
-flag_queue = queue.Queue()
-set_point_queue = Queue()
-rov_depth_queue = Queue()
-new_set_point_event = Event()
-start_event = Event()
-start_event.set()
-stop_event = Event()
-thread_running_event = Event()
 if __name__ =="__main__":
+    arduino_command_queue = Queue()
+    sensor_list = []
+    gui_command_queue = Queue()
+    seafloor_sonar_queue = queue.Queue()
+    flag_queue = queue.Queue()
+    set_point_queue = Queue()
+    rov_depth_queue = Queue()
+    new_set_point_event = Event()
+    start_event = Event()
+    start_event.set()
+    stop_event = Event()
+    thread_running_event = Event()
     #Creating threads
     payload_handler = PayloadHandler(sensor_list, arduino_command_queue, gui_command_queue,
                                      seafloor_sonar_queue, new_set_point_event,
@@ -32,7 +32,10 @@ if __name__ =="__main__":
     payload_handler.daemon = True
     payload_handler.start()
     sea_floor_tracker.daemon= True
+    print(sea_floor_tracker.daemon)
     sea_floor_tracker.start()
+
+    print(sea_floor_tracker.is_alive())
     def __start_communication_threads():
         try:
             thread_running_event.set()

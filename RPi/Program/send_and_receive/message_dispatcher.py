@@ -21,7 +21,7 @@ class MessageDispatcher():
         try:
             test = self.data_queue.get(timeout=0.01)
             self.counter_sent += 1
-            # print(test)
+            # print("send",test)
             self.socket.send_json(test)
             # self.counter = self.counter +1
             # print(self.counter)

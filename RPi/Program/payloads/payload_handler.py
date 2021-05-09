@@ -51,9 +51,12 @@ class PayloadHandler(Thread):
         """
         try:
             payload_type, payload_names, payload_data = self.payload_reader.read_payload(
-                self.message_queue.get(timeout=0.001))
-            #print(payload_data[0]=="depth_beneath_boat")
+                self.message_queue.get(timeout=0.01))
+            print(payload_data[0]=="depth_beneath_boat")
+
+            print("payload", payload_data)
             if payload_type == 'commands':
+                print("payload", payload_data)
                 if payload_data[0] in self.commands_to_serial:
                     self.command_queue.put(str(payload_data[0]) + ':' + str(payload_data[1]))
                 elif payload_data[0] == 'start_system':

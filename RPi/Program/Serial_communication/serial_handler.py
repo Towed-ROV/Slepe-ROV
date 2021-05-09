@@ -35,15 +35,20 @@ class SerialHandler(Thread):
                                   'wing_pos_port', 'wing_pos_sb',
                                   'yaw', 'roll', 'pitch', 'depth_beneath_rov',
                                   'vertical_acceleration']
-        self.serial_message_received_handler = SerialMessageRecivedHandler(self.gui_command_queue, self.sensor_list,
-                                                                           self.VALID_SENSOR_LIST, self.reader_queue)
+        self.serial_message_received_handler = SerialMessageRecivedHandler(self.gui_command_queue,
+                                                                           self.sensor_list,
+                                                                           self.VALID_SENSOR_LIST,
+                                                                           self.reader_queue)
         self.serial_message_received_handler.daemon = True
         self.serial_message_received_handler.start()
-        self.handle_writer_queue = HandleWriterQueue(self.reader_queue, self.writer_queue, self.writer_queue_IMU,
+        self.handle_writer_queue = HandleWriterQueue(self.reader_queue,
+                                                     self.writer_queue,
+                                                     self.writer_queue_IMU,
                                                      self.writer_queue_sensor_arduino,
                                                      self.writer_queue_stepper_arduino,
-                                                     self.from_arduino_to_arduino_queue, set_point_queue,
-                                                     rov_depth_queue)
+                                                     self.from_arduino_to_arduino_queue,
+                                                     self.set_point_queue,
+                                                     self.rov_depth_queue)
 
     def run(self):
         while self.thread_running_event.is_set():

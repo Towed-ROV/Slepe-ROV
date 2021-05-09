@@ -8,6 +8,7 @@ class PayloadReader:
         """
         payload_type = received_data['payload_name']
         data = received_data['payload_data']
+        print('payload_name')
         keys = []
         values = []
         for k in data:
