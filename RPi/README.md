@@ -13,3 +13,7 @@ venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
+```Run
+cd Program
+python main.py
+```
