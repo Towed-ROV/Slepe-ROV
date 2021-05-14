@@ -34,14 +34,22 @@ class SerialHandler(Thread):
         self.VALID_SENSOR_LIST = ['depth', 'pressure', 'temperature',
                                   'wing_pos_port', 'wing_pos_sb',
                                   'yaw', 'roll', 'pitch', 'depth_beneath_rov',
-                                  'vertical_acceleration']
-        self.serial_message_received_handler = SerialMessageRecivedHandler(self.gui_command_queue, self.sensor_list,
-                                                                           self.VALID_SENSOR_LIST, self.reader_queue)
+                                  'vertical_acceleration','set_points_depth']
+        self.serial_message_received_handler = SerialMessageRecivedHandler(self.gui_command_queue,
+                                                                           self.sensor_list,
+                                                                           self.VALID_SENSOR_LIST,
+                                                                           self.reader_queue)
         self.serial_message_received_handler.daemon = True
         self.serial_message_received_handler.start()
-        self.handle_writer_queue = HandleWriterQueue(self.reader_queue, self.writer_queue, self.writer_queue_IMU,
-                                                     self.writer_queue_sensor_arduino, self.writer_queue_stepper_arduino,
-                                                     self.from_arduino_to_arduino_queue, set_point_queue, rov_depth_queue)
+        self.handle_writer_queue = HandleWriterQueue(self.reader_queue,
+                                                     self.writer_queue,
+                                                     self.writer_queue_IMU,
+                                                     self.writer_queue_sensor_arduino,
+                                                     self.writer_queue_stepper_arduino,
+                                                     self.from_arduino_to_arduino_queue,
+                                                     self.set_point_queue,
+                                                     self.rov_depth_queue)
+
     def run(self):
         while self.thread_running_event.is_set():
             if not self.com_port_found:
@@ -55,7 +63,7 @@ class SerialHandler(Thread):
                 self.com_port_found = test
         self.com_port_found = False
 
-#todo active threads list
+    # todo active threads list
     def __close_threads(self):
         for thread in self.serial_threads:
             thread.stop_thread()
@@ -74,7 +82,7 @@ class SerialHandler(Thread):
                 self.serial_threads.append(self.__open_serial_thread(self.writer_queue_IMU,
                                                                      self.reader_queue, com_port, 57600))
                 self.writer_queue_IMU.put('IMU:OK')
-                self.serial_connected.append('IMU:'+ com_port)
+                self.serial_connected.append('IMU:' + com_port)
             if 'SensorArduino' in port_name:
                 self.serial_threads.append(self.__open_serial_thread(self.writer_queue_sensor_arduino,
                                                                      self.reader_queue, com_port, 115200))
@@ -86,7 +94,6 @@ class SerialHandler(Thread):
                 self.writer_queue_stepper_arduino.put('stepper_arduino:OK')
                 self.serial_connected.append('StepperArduino:' + com_port)
         return True
-
 
     def find_com_ports(self):
         """
@@ -105,13 +112,12 @@ class SerialHandler(Thread):
         :param baud_rate: the baud rate for the serial communication
         :return:
         """
-        serial_reader = SerialWriterReader(output_queue, input_queue, com_port, baud_rate,self.from_arduino_to_arduino_queue)
+        serial_reader = SerialWriterReader(output_queue, input_queue, com_port, baud_rate,
+                                           self.from_arduino_to_arduino_queue)
         serial_reader.daemon = True
         serial_reader.start()
 
         return serial_reader
-
-
 
 
 if __name__ == '__main__':

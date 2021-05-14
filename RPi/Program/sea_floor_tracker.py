@@ -9,7 +9,6 @@ from threading import Thread
 from time import sleep
 
 
-
 class SeafloorTracker(Thread):
     def __init__(self, length_rope, desired_distance, min_dist, dist_to_skip,
                  depth_of_rov, depth_beneath_boat, new_set_point_event, set_point_queue):
@@ -29,14 +28,20 @@ class SeafloorTracker(Thread):
 
     def run(self):
         while True:
-            if self.new_set_point_event.is_set():
-                depths_beneath_rov = np.array(self.depths_beneath_boat.queue)
-                depths_of_rov = self.depths_of_rov
-                with self.depths_beneath_boat.mutex:
-                    self.depths_beneath_boat.queue.clear()
-                print("ok")
-                self.set_point_queue.put(self.get_set_point(depths_beneath_rov, depths_of_rov))
+            try:
+                if self.new_set_point_event.is_set():
+                    depths_beneath_rov = np.array(self.depths_beneath_boat.queue)
+                    depths_of_rov = self.depths_of_rov
+                    #print("seafloor", self.set_points)
+                    with self.depths_beneath_boat.mutex:
+                        self.depths_beneath_boat.queue.clear()
+                    setpoint = 'set_point_depth:{}'.format(self.get_set_point(depths_beneath_rov, depths_of_rov))
+                    self.set_point_queue.put(setpoint)
+                    self.new_set_point_event.clear()
+            except Exception as e:
                 self.new_set_point_event.clear()
+                print("erro: ", format(e))
+                continue
 
     def get_set_point(self, sonar_values, depth_rov):
         """[summary]
@@ -46,14 +51,19 @@ class SeafloorTracker(Thread):
         Returns:
             [float]: [The new depth set point for the ROV]
         """
+        #print("sonar_values:", sonar_values)
         current_set_point = self.set_points[0]
+
+        #print("current_set_point:{}".format( current_set_point))
         new_set_point, alarm = self.__cost_function(sonar_values)
+        #p#rint("new_set_point: ", new_set_point)
+        #print("alarm: ", alarm)
         self.set_points = np.delete(self.set_points, 0)
         self.set_points = np.append(self.set_points, new_set_point)
         self.set_points = self.__find_opt_sp(self.set_points, current_set_point, depth_rov, self.desired_distance,
                                              self.min_dist, self.dist_to_skip)
-        return self.set_points[0]
 
+        return self.set_points[0]
 
     def set_paramter_values(self, length_rope=None, desired_distance=None, min_dist=None, dist_to_skip=None):
         """[summary]
@@ -88,6 +98,7 @@ class SeafloorTracker(Thread):
         new_sp = 0
         alarm_flag = False
         max_set_point = round(min(sonar_values) - self.min_dist)
+        print("max", max_set_point)
         if max_set_point >= 0:
             legal_set_points = np.arange(0, max_set_point, 0.5)
             cost = np.zeros([len(legal_set_points)])
@@ -95,6 +106,7 @@ class SeafloorTracker(Thread):
                 for sonar_value in sonar_values:
                     cost[index] += abs(sonar_value - set_point - self.desired_distance)
             min_cost = np.amin(cost)
+            print("min_cost",min_cost)
             min_cost_idx = np.array(np.argmax(cost == min_cost))
             new_sp = legal_set_points[min_cost_idx]
         else:
@@ -157,5 +169,3 @@ if __name__ == "__main__":
 
     sleep(3)
     q3.put(True)
-
-

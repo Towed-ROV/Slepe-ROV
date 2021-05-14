@@ -1,7 +1,7 @@
 import glob
 import serial
 import sys
-from time import sleep 
+from time import sleep
 
 
 class SerialFinder:
@@ -15,6 +15,8 @@ class SerialFinder:
         Loop through all available com ports on rpi and multiple baud rates.
         :return: dict with all found com ports
         """
+
+        print("port_names")
         search_runs = 0
         port_names = self.get_available_com_ports()
         print(port_names)
@@ -28,18 +30,18 @@ class SerialFinder:
                 # if 'dev' in key:
                 serial_port = serial.Serial(key, self.baud_rate, timeout=1,
                                             stopbits=1, bytesize=8)
-                serial_port.write("<reset:True>".encode('utf-8'))
-                print(key)
-                print(self.baud_rate)
+                # serial_port.write("<reset:True>".encode('utf-8'))
                 try:
                     sleep(2)
                     if serial_port.in_waiting:
+                        print("me")
                         message_received = serial_port.readline()
+                        print(message_received)
                         if message_received:
-                            print(message_received,'stig')
                             message_received = message_received.strip().decode('utf-8').split(self.seperation_char)
-#                             print(message_received,'kato')
+                            #                             print(message_received,'kato')
                             port_name = message_received[0].replace('<', '')
+                            print(port_name)
                             if 'IMU' in port_name and self.baud_rate == 57600:
                                 self.port_name_list[key] = 'IMU'
                                 print('Found IMU')
@@ -111,8 +113,3 @@ class SerialFinder:
         #     print('There are no serial-ports available')
         # port_names = list(dict.fromkeys(port_names))
         # return list(port_names)
-
-
-
-
-

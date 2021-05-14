@@ -58,8 +58,8 @@ class PayloadWriter(Thread):
             }
             
             
-#             print('-----------')
-#             print(sensor_structure)
+            #print('-----------')
+            #print(sensor_structure)
 #             print('-----------')
 
             self.message_queue.put(sensor_structure)
@@ -80,6 +80,7 @@ class PayloadWriter(Thread):
                 "payload_name": "response",
                 "payload_data": json_command
             }
+            print(json_command)
             self.message_queue.put(command_structure)
             print(command_structure, "responce")
         except queue.Empty:

@@ -1,5 +1,3 @@
-
-
 class PayloadReader:
 
     def read_payload(self, received_data):
@@ -10,7 +8,7 @@ class PayloadReader:
         """
         payload_type = received_data['payload_name']
         data = received_data['payload_data']
-        keys= []
+        keys = []
         values = []
         for k in data:
             size = len(k)
@@ -18,4 +16,3 @@ class PayloadReader:
                 keys.append(key)
                 values.append(value)
         return payload_type, keys, values
-

@@ -53,7 +53,10 @@ class HandleWriterQueue:
     def __put_in_writer_queue(self, writer_queue):
         try:
             message = writer_queue.get(timeout=0.005)
+            print(message,"msg")
             item = message.split(':', 1)
+            print("message: ", item,message)
+
             if item[0] in self.arduino_sensor_commands:
                 self.__append_sensor_arduino_writer_queue(message)
             elif item[0] in self.arduino_stepper_commands:
@@ -64,6 +67,8 @@ class HandleWriterQueue:
             else:
                 print("no command!")
         except queue.Empty:
+            pass
+        except Exception:
             pass
 
     def __append_imu_writer_queue(self, message):
