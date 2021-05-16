@@ -25,6 +25,7 @@ class SeafloorTracker(Thread):
         self.depths_beneath_boat = depth_beneath_boat
         self.new_set_point_event = new_set_point_event
         self.set_point_queue = set_point_queue
+        self.i =0
 
     def run(self):
         while True:
@@ -32,12 +33,14 @@ class SeafloorTracker(Thread):
                 if self.new_set_point_event.is_set():
                     depths_beneath_rov = np.array(self.depths_beneath_boat.queue)
                     depths_of_rov = self.depths_of_rov
-                    #print("seafloor", self.set_points)
+                    print("seafloor", self.set_points,self.i)
                     with self.depths_beneath_boat.mutex:
                         self.depths_beneath_boat.queue.clear()
                     setpoint = 'set_point_depth:{}'.format(self.get_set_point(depths_beneath_rov, depths_of_rov))
                     self.set_point_queue.put(setpoint)
                     self.new_set_point_event.clear()
+                    self.i+=1
+
             except Exception as e:
                 self.new_set_point_event.clear()
                 print("erro: ", format(e))

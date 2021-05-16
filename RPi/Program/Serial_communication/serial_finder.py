@@ -30,13 +30,13 @@ class SerialFinder:
                 # if 'dev' in key:
                 serial_port = serial.Serial(key, self.baud_rate, timeout=1,
                                             stopbits=1, bytesize=8)
-                # serial_port.write("<reset:True>".encode('utf-8'))
+
                 try:
                     sleep(2)
                     if serial_port.in_waiting:
-                        print("me")
+                        #print("me")
                         message_received = serial_port.readline()
-                        print(message_received)
+                        #print(message_received)
                         if message_received:
                             message_received = message_received.strip().decode('utf-8').split(self.seperation_char)
                             #                             print(message_received,'kato')
@@ -50,10 +50,12 @@ class SerialFinder:
                                 self.port_name_list[key] = 'SensorArduino'
                                 print('Found SensorArduino')
                                 print(self.baud_rate)
+                                serial_port.write("<reset:True>".encode('utf-8'))
 
                             elif 'StepperArduino' in port_name:
                                 self.port_name_list[key] = 'StepperArduino'
                                 print('Found StepperArduino')
+                                serial_port.write("<reset:True>".encode('utf-8'))
                         serial_port.reset_input_buffer()
                         serial_port.close()
                 except (Exception) as e:

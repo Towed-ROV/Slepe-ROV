@@ -50,6 +50,7 @@ class PayloadHandler(Thread):
         takes the received payload and reads it and either handles it or forwards it to the serial output queue
         """
         try:
+
             payload_type, payload_names, payload_data = self.payload_reader.read_payload(
                 self.message_queue.get(timeout=0.01))
             if payload_type == 'commands':

@@ -34,7 +34,7 @@ if __name__ == "__main__":
     payload_handler.daemon = True
     payload_handler.start()
     sea_floor_tracker.daemon = True
-    print(sea_floor_tracker.daemon)
+    #print(sea_floor_tracker.daemon)
     sea_floor_tracker.start()
 
     print(sea_floor_tracker.is_alive())
@@ -43,12 +43,11 @@ if __name__ == "__main__":
     def __start_communication_threads():
         try:
             thread_running_event.set()
-            # payload_writer = PayloadWriter(sensor_list, gui_command_queue, thread_running_event)
             payload_writer.daemon = True
             payload_writer.start()
 
-            # serial_handler = SerialHandler(sensor_list, arduino_command_queue, gui_command_queue,
-            # set_point_queue, rov_depth_queue, thread_running_event)
+            serial_handler = SerialHandler(sensor_list, arduino_command_queue, gui_command_queue,
+            set_point_queue, rov_depth_queue, thread_running_event)
             serial_handler.daemon = True
             serial_handler.start()
         except (Exception) as e:

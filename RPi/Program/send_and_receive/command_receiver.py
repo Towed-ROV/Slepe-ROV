@@ -10,7 +10,7 @@ class CommandReceiver(Thread):
         self.ctx = zmq.Context()
         self.connection = self.ctx.socket(zmq.REP)
         self.cmd_queue = cmd_queue
-        self.ip = 'tcp://127.0.0.1:42069'
+        self.ip = 'tcp://127.0.0.1:9004'
 
     def bind(self):
         self.connection.bind(self.ip)
@@ -24,10 +24,13 @@ class CommandReceiver(Thread):
         return command_received
 
     def run(self):
+        print("started")
         self.bind()
         while True:
+            print("run")
             try:
                 cmd = self.recv()
+                print("inc: ",cmd)
                 self.cmd_queue.put(cmd)
                 self.send({"success": True})
             except (Exception) as e:

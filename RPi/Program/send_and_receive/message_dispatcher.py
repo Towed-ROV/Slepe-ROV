@@ -5,7 +5,7 @@ from time import time
 
 class MessageDispatcher():
     def __init__(self, data_queue):
-        self.ip = 'tcp://127.0.0.1:13372'
+        self.ip = 'tcp://127.0.0.1:8050'
         context = zmq.Context()
         self.socket = context.socket(zmq.PUB)
         self.connect()

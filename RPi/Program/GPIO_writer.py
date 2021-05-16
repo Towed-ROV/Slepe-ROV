@@ -23,7 +23,7 @@ class GPIOWriter:
         in_min = 0
         in_max = 100
         PWM = self.__map(brightness, in_max, in_min, out_max, out_min)
-        print(PWM)
+       # print(PWM)
         # self.lights.set_PWM_dutycycle(self.pin_led_lights, 255)
         return True
     def adjust_camera(self, pitch):

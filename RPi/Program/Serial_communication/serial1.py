@@ -40,7 +40,7 @@ class SerialWriterReader(Thread):
                 test = self.output_queue.get(timeout=0.001)
 
                 self.__write_serial_data(test)
-                print("test",test)
+                #print("test",test)
             except queue.Empty:
                 pass
             except TypeError:
@@ -54,7 +54,6 @@ class SerialWriterReader(Thread):
                                 self.input_queue.put_nowait(message)
                                 msg = message.split(TERMINATOR, 1)[0]
                                 if msg in self.FROM_ARDUINO_TO_ARDUINO:
-                                    # print(message,'kuk')
                                     try:
                                         self.from_arduino_to_arduino_queue.put_nowait(message)
                                     except queue.Full:
@@ -69,15 +68,15 @@ class SerialWriterReader(Thread):
         write message to serial port
         :param message: message to send to serial
         """
-        print(self.serial_port.isOpen(),self.com_port)
+        #print(self.serial_port.isOpen(),self.com_port)
         if self.serial_port.isOpen():
             output = START_CHAR + message + END_CHAR + NEW_LINE
-            print ("outoutbaby",output,self.last_output)
             if output != self.last_output:
                 try:
                     output = output.encode(ENCODING)
+
                     self.serial_port.write(output)
-                    #                     print(output, '    ', str(self.counter), '    ', self.baud_rate)
+                    #print(output, '    ', str(self.counter), '    ', self.baud_rate)
                     self.counter = self.counter + 1
                     self.last_output = output
                 except (Exception) as e:
@@ -92,7 +91,7 @@ class SerialWriterReader(Thread):
             replace(START_CHAR, ""). \
             replace(END_CHAR, ""). \
             replace(" ", "")
-
+        print(message_received)
         return message_received
 
     def __read_incoming_data(self):

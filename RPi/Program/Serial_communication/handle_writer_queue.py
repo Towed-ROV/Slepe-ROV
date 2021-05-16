@@ -53,7 +53,7 @@ class HandleWriterQueue:
     def __put_in_writer_queue(self, writer_queue):
         try:
             message = writer_queue.get(timeout=0.005)
-            print(message,"msg")
+            #print(message,"msg")
             item = message.split(':', 1)
             print("message: ", item,message)
 
