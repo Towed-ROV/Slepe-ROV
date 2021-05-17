@@ -35,7 +35,6 @@ class SerialWriterReader(Thread):
         self.packet = bytearray()
         self.last_output = ''
         self.FROM_ARDUINO_TO_ARDUINO = ['depth', 'roll', 'pitch']
-        self.counter = 0
 
     def run(self):
         """
@@ -61,7 +60,6 @@ class SerialWriterReader(Thread):
                                 self.input_queue.put_nowait(message)
                                 msg = message.split(TERMINATOR, 1)[0]
                                 if msg in self.FROM_ARDUINO_TO_ARDUINO:
-                                    # print(message,'kuk')
                                     try:
                                         self.from_arduino_to_arduino_queue.put_nowait(message)
                                     except queue.Full:
@@ -82,8 +80,6 @@ class SerialWriterReader(Thread):
                 try:
                     output = output.encode(ENCODING)
                     self.serial_port.write(output)
-                    #                     print(output, '    ', str(self.counter), '    ', self.baud_rate)
-                    self.counter = self.counter + 1
                     self.last_output = output
                 except (Exception) as e:
                     print(e, 'serial writer')
@@ -106,7 +102,7 @@ class SerialWriterReader(Thread):
 
     def __read_incoming_data(self):
         """
-        reads from serial port, iterates over each byte to find the start byte "<" and add each follow byte to a
+        Reads from serial port, iterates over each byte to find the start byte "<" and add each follow byte to a
         variable of bytes until the byte received equal the stop byte ">". The bytes will be decoded and a string of
          received data will be returned
         :return: message(String) read from serial port
@@ -136,13 +132,3 @@ class SerialWriterReader(Thread):
         self.serial_port.close()
         print('closed port', self.serial_port.isOpen())
 
-
-if __name__ == '__main__':
-    q1 = queue.Queue()
-    q2 = queue.Queue()
-    q3 = queue.Queue()
-    ser = SerialWriterReader(q1, q2, '/dev/ttyUSB0', 115200, q3)
-    ser.daemon = True
-    ser.start()
-    while True:
-        pass
