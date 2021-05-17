@@ -126,24 +126,30 @@ class SeafloorTracker(Thread):
             [type]: [description]
         """
         set_points_mean = round(np.mean(set_points))
-        if current_sp - min(set_points) > min_dist or depth_rov - min(set_points) > min_dist:
+        # If the ROV is on colision course every set point is set to a safe distance giving it time to go up
+        if  current_sp-set_points[-1] > desired_distance-min_dist or depth_rov-set_points[-1] > desired_distance-min_dist:
             set_points_min = min(set_points)
             set_points = np.empty(len(set_points))
             set_points.fill(set_points_min)
-        elif set_points_mean - depth_rov <= 1 and set_points_mean > depth_rov and current_sp - set_points_mean >= 3:
+        elif current_sp-min(set_points) > desired_distance-min_dist or depth_rov-min(set_points) > desired_distance-min_dist:
+            set_points[0] = min(set_points)
+        # Rov closer to mean than current sp
+        elif dist_to_skip > abs(depth_rov-set_points_mean)<abs(depth_rov-current_sp):
             set_points[0] = set_points_mean
-        elif abs(
-                current_sp - set_points_mean) > dist_to_skip:  # and abs(set_points_mean-min(set_points)) < abs(min(set_points) - self.min_dist):
+        # if the distance between current sp and mean sp is greater than dist to ignore
+        elif abs(current_sp - set_points_mean) > dist_to_skip:
+            # if mean is less than current the ROV goes up
             if set_points_mean < current_sp:
                 set_points[0] = set_points_mean
-            elif min(set_points) + desired_distance - set_points_mean > min_dist:
-                set_points[0] = set_points_mean
+
+            elif set_points_mean - set_points[0] < desired_distance-min_dist  and set_points_mean-min(set_points) < desired_distance-min_dist: 
+                set_points[0] = set_points_mean 
             else:
-                set_points[0] = current_sp
+                set_points[0] = min(set_points) 
         else:
             set_points[0] = current_sp
         return set_points
-
+        
     def __change_matrix_size(self, matrix_to_change, size, new_size):
         difference = new_size - size
         if difference >= 1:
