@@ -13,7 +13,7 @@ class SerialMessageRecivedHandler(Thread):
         self.valid_commands = ['reset', 'IMU', 'SensorArduino', 'StepperArduino',
                                'depth_beneath_rov_offset', 'depth_rov_offset', 'pid_depth_p',
                                'pid_depth_i', 'pid_depth_d', 'pid_roll_p', 'pid_roll_i', 'pid_roll_d',
-                               'auto_mode', 'manual_wing_pos', 'set_point_depth',
+                               'auto_mode', 'manual_wing_pos',
                                'emergency_surface'
                                ]
         self.message_queue = message_queue
