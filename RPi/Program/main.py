@@ -27,7 +27,7 @@ if __name__ == "__main__":
     payload_writer = PayloadWriter(sensor_list, gui_command_queue, thread_running_event)
     serial_handler = SerialHandler(sensor_list, arduino_command_queue, gui_command_queue,
                                    set_point_queue, rov_depth_queue, thread_running_event)
-    sea_floor_tracker = SeafloorTracker(length_rope=200, desired_distance=20, min_dist=15, dist_to_skip=5,
+    sea_floor_tracker = SeafloorTracker(length_rope=200, desired_distance=15, min_dist=10, dist_to_skip=5,
                                         depth_of_rov=0, depth_beneath_boat=seafloor_sonar_queue,
                                         new_set_point_event=new_set_point_event, set_point_queue=set_point_queue)
 
