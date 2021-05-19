@@ -73,10 +73,10 @@ class PayloadHandler(Thread):
                 elif payload_data[0] == "has_traveled_set_distance":
                     self.new_set_point_event.set()
             if payload_type == 'settings':
-                if payload_data[0] == 'arduino_sensor':
-                    self.command_queue.put('arduino_sensor:' + payload_data[1] + ':' + payload_data[2])
-                if payload_data[0] == 'arduino_stepper':
-                    self.command_queue.put('arduino_stepper:' + payload_data[1] + ':' + payload_data[2])
+                if payload_data[1] == 'arduino_sensor':
+                    self.command_queue.put('arduino_sensor:' + payload_data[2] + ':' + payload_data[0])
+                if payload_data[1] == 'arduino_stepper':
+                    self.command_queue.put('arduino_stepper:' + payload_data[2] + ':' + payload_data[0])
 
         except queue.Empty:
             pass
