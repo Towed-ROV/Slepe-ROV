@@ -48,10 +48,10 @@ bool boolWingPos;
 // LIMITS
 int min_stepper_pos = -800;
 int max_stepper_pos = 800;
-double max_wing_angle = 35;
+double max_wing_angle = 25;
 double max_pid_output = 15;
 double min_sea_floor_distance = 10;
-double max_trim = 20;
+double max_trim = 15;
 
 //SET POINTS
 double set_point_depth = 0; //set point Depth/Sea floor
@@ -92,8 +92,8 @@ void setup() {
   pid_depth.SetMode(MANUAL);
   pid_trim.SetMode(MANUAL);
   data_string.reserve(200);
-  max_stepper_pos = max_wing_angle * 19.78;  //Gear radius 3.5 cm. 19.78 steps is 1 degree in wing angle. resolution is then 0.0555 degrees.
-  min_stepper_pos = -max_wing_angle * 19.78;
+  max_stepper_pos = max_wing_angle * 23.148;  //Gear radius 3.5 cm. 19.78 steps is 1 degree in wing angle. resolution is then 0.0555 degrees.
+  min_stepper_pos = -max_wing_angle * 23.148;
   while (!Serial) {
     //wait to connect
   }

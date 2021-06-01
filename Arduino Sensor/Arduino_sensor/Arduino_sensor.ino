@@ -71,7 +71,9 @@ Adafruit_L3GD20_Unified gyro = Adafruit_L3GD20_Unified(20);
 
 const float ALPHA_COMP_FILTER = 0.94;
 const float ALPHA_LP_FILTER = 0.05;
-
+const float calibration_gyro_Y = -0.028018;
+const float calibration_gyro_X = 0.103667;
+const float calibration_gyro_Z = -0.024099;
 
 
 float roll_to_send = 0;
@@ -86,7 +88,7 @@ float accel_y = 0;
 float accel_z = 0;
 float vertical_accel = 0;
 
-#simple kalman filter
+
 SimpleKalmanFilter pressureKalmanFilter(0.08, 1000, 0.01);
 
 
@@ -142,6 +144,7 @@ void setup() {
 
   // Use built in Serial port to communicate with the Arduino IDE Serial Monitor
   Serial.begin(57600);
+  delay(1000);
   Serial.println("<SensorArduino:0>");  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(D2, OUTPUT);
   pinMode(D3, OUTPUT);
@@ -152,14 +155,12 @@ void setup() {
   while (!ping.initialize()) {
     Serial.println(F("echosounder did not initialize"));
   }
-  Serial.println(F("Ping device initialized!"));
   Wire.begin();
   Wire.setClock(10000);
   while (!sensor.init()) {
     Serial.println(F("pressure not initialized!"));
     delay(1000);
   }
-  Serial.println(F("Sensor initialized!"));
   sensor.setModel(MS5837::MS5837_30BA);
   sensor.setFluidDensity(1029); // kg/m^3 (freshwater, 1029 for seawater)
   gyro.enableAutoRange(true);
@@ -169,7 +170,7 @@ void setup() {
     //wait to connect
   }
 
-  delay(500);
+  delay(2000);
 
 }
 
@@ -244,12 +245,12 @@ void loop() {
       Serial.println(string_to_rpi2);
       turnToSend = UPDATE_PITCH;
       previousMillis = currentMillis;
-      rotate_imu_measurements();
+      
     }
     else if (turnToSend == UPDATE_PITCH)
     {
       Serial.print(F("<pitch: "));
-      Serial.print(pitch);
+      Serial.print(roll);
       Serial.println(F(">"));
       turnToSend = UPDATE_ROLL;
       previousMillis = currentMillis;
@@ -257,11 +258,11 @@ void loop() {
     else if (turnToSend == UPDATE_ROLL)
     {
       Serial.print(F("<roll: "));
-      Serial.print((roll));
+      Serial.print(-pitch + 6);
       Serial.println(F(">"));
       turnToSend = UPDATE_ACCELERATION;
       previousMillis = currentMillis;
-      vertical_accel = getVerticalAcceleration(roll, pitch, accel_x, accel_y, accel_z);
+      vertical_accel = getVerticalAcceleration(-pitch, roll, accel_x, accel_y, accel_z);
     }
     else if (turnToSend == UPDATE_ACCELERATION)
     {
@@ -271,9 +272,8 @@ void loop() {
       turnToSend = UPDATE_YAW;
       previousMillis = currentMillis;
       sensor.read();
-      depth = sensor.depth() + depth_rov_offset;
       temp1 = sensor.temperature();
-      pressure = pressureKalmanFilter.updateEstimate(sensor.pressure());
+      depth = pressureKalmanFilter.updateEstimate(sensor.depth()) + depth_rov_offset;
       pressure = sensor.pressure();
 
 
@@ -332,9 +332,9 @@ void updateImuData(unsigned long dt_imu) {
 
   sensors_event_t event;
   gyro.getEvent(&event);
-  double pitch_gyro = (event.gyro.y - 0.028018) * 180 / PI;
-  double roll_gyro =  (event.gyro.x + 0.103667) * 180 / PI;
-  double yaw_gyro = (event.gyro.z - 0.024099) * 180 / PI;
+  double pitch_gyro = -(event.gyro.y + calibration_gyro_Y) * 180 / PI;
+  double roll_gyro =  -(event.gyro.x + calibration_gyro_X) * 180 / PI;
+  double yaw_gyro = -(event.gyro.z + calibration_gyro_Z) * 180 / PI;
 
   sensors_vec_t   orientation;
   sensors_event_t accel_event;
@@ -352,6 +352,7 @@ void updateImuData(unsigned long dt_imu) {
 
 
   }
+  pitch_acc = rotate_imu_measurements(pitch_acc);
   pitch = complementary_filter(ALPHA_COMP_FILTER, pitch, pitch_gyro, pitch_acc, dt_imu);
   roll = complementary_filter(ALPHA_COMP_FILTER, roll, roll_gyro, roll_acc, dt_imu);
   yaw = complementary_filter(ALPHA_COMP_FILTER, yaw, yaw_gyro, yaw_acc, dt_imu);
@@ -359,7 +360,7 @@ void updateImuData(unsigned long dt_imu) {
 }
 
 float complementary_filter(float alpha, float prev_angle, float gyro_value, float accel_value, float dt) {
-  float filtered_value  = prev_angle + alpha * gyro_value * dt + (1 - alpha) * accel_value;
+  float filtered_value  = alpha * (prev_angle + gyro_value * dt) + (1 - alpha) * accel_value;
   return filtered_value;
 }
 float low_pass_filter(float alpha, float new_val, float prev_val) {
@@ -367,37 +368,33 @@ float low_pass_filter(float alpha, float new_val, float prev_val) {
   return filtered_value;
 }
 
-/*
-    @brief  calculates the vertical component relative to the sea surface for every acceleration vector and returns the total magnitude
-*/
-
-float getVerticalAcceleration(float roll, float pitch, float accel_x, float accel_y, float accel_z) {
+float getVerticalAcceleration(float roll_angle, float pitch_angle, float accel_x, float accel_y, float accel_z) {
 
   //the imu is rotated in the rov
-  pitch = pitch * PI / 180; //angles to radians
-  roll = roll * PI / 180;
-  //  roll += PI / 2; //rotate measured angles
-  //  pitch += PI / 2;
-  float accel_vertical_x = accel_x * cos(pitch) * sin(roll) /
-                           sqrt(cos(roll) * cos(roll) * sin(pitch) * sin(pitch) + sin(roll) * sin(roll));
-  float accel_vertical_y = accel_y * sin(pitch) * cos(roll) /
-                           sqrt(cos(roll) * cos(roll) * sin(pitch) * sin(pitch) + sin(roll) * sin(roll));
-  float accel_vertical_z = accel_z * sin(pitch) * sin(roll) /
-                           sqrt(cos(roll) * cos(roll) * sin(pitch) * sin(pitch) + sin(roll) * sin(roll));
-  return -accel_vertical_y - accel_vertical_x + accel_vertical_z + 10;
+  pitch_angle = pitch_angle * PI / 180; //degrees to radians
+  roll_angle = roll_angle * PI / 180;
+    roll_angle += PI / 2; //rotate measured angles
+    pitch_angle += PI / 2;
+  float accel_vertical_x = accel_x * cos(pitch_angle) * sin(roll_angle) /
+                           sqrt(cos(roll_angle) * cos(roll_angle) * sin(pitch_angle) * sin(pitch_angle) + sin(roll_angle) * sin(roll_angle));
+  float accel_vertical_y = accel_y * sin(pitch_angle) * cos(roll_angle) /
+                           sqrt(cos(roll_angle) * cos(roll_angle) * sin(pitch_angle) * sin(pitch_angle) + sin(roll_angle) * sin(roll_angle));
+  float accel_vertical_z = accel_z * sin(pitch_angle) * sin(roll_angle) /
+                           sqrt(cos(roll_angle) * cos(roll_angle) * sin(pitch_angle) * sin(pitch_angle) + sin(roll_angle) * sin(roll_angle));
+  return -accel_vertical_y - accel_vertical_x + accel_vertical_z;
 }
 
-void rotate_imu_measurements() {
-  roll_to_send = - pitch;
-  pitch_to_send = roll;
-  if (abs(roll_to_send) == 180) {
-    roll_to_send = 0;
+float rotate_imu_measurements(float angle) {
+
+  if (abs(angle) == 180) {
+    angle = 0;
   }
-  else if (roll_to_send <= 0) {
-    roll_to_send = roll_to_send + 180;
+  else if (angle <= 0) {
+    angle = angle + 180;
   } else {
-    roll_to_send = roll_to_send - 180;
+    angle = angle - 180;
   }
+  return angle;
 
 }
 //separates string message

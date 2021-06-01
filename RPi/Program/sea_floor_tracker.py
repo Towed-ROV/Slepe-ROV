@@ -26,6 +26,7 @@ class SeafloorTracker(Thread):
         self.depths_beneath_boat = depth_beneath_boat
         self.new_set_point_event = new_set_point_event
         self.set_point_queue = set_point_queue
+        self.array_count = 0
 
     def run(self):
         while True:
@@ -39,7 +40,7 @@ class SeafloorTracker(Thread):
                 self.new_set_point_event.clear()
 
     def get_set_point(self, sonar_values, depth_rov):
-        """[summary]
+        """[Get a new set point based on the current set point and future depths]
         Args:
             sonar_values ([float]): [numpy 1D array with recorded sonar values]
             depth_rov ([float]): [The last measured ROV depth]
@@ -50,8 +51,13 @@ class SeafloorTracker(Thread):
         new_set_point, alarm = self.__cost_function(sonar_values)
         self.set_points = np.delete(self.set_points, 0)
         self.set_points = np.append(self.set_points, new_set_point)
-        self.set_points = self.__find_opt_sp(self.set_points, current_set_point, depth_rov, self.desired_distance,
-                                             self.min_dist, self.dist_to_skip)
+        if self.set_points_full:
+            self.set_points = self.__find_opt_sp(self.set_points, current_set_point, depth_rov, self.desired_distance,
+                                                 self.min_dist, self.dist_to_skip)
+        elif self.array_count >= len(self.set_points) - 1:
+            self.set_points_full = True
+        else:
+            self.array_count = self.array_count + 1
         return self.set_points[0]
 
 
@@ -111,20 +117,32 @@ class SeafloorTracker(Thread):
             [type]: [description]
         """
         set_points_mean = round(np.mean(set_points))
-        if current_sp - min(set_points) > min_dist or depth_rov - min(set_points) > min_dist:
+
+        # If the ROV is on colision course every set point is set to a safe distance giving it time to go up
+        if current_sp - set_points[-1] > desired_distance - min_dist or depth_rov - set_points[
+            -1] > desired_distance - min_dist:
             set_points_min = min(set_points)
             set_points = np.empty(len(set_points))
             set_points.fill(set_points_min)
-        elif set_points_mean - depth_rov <= 1 and set_points_mean > depth_rov and current_sp - set_points_mean >= 3:
+        elif current_sp - min(set_points) > desired_distance - min_dist or depth_rov - min(
+                set_points) > desired_distance - min_dist:
+            set_points[0] = min(set_points)
+        # Rov closer to mean than current sp
+        elif dist_to_skip > abs(depth_rov - set_points_mean) < abs(depth_rov - current_sp):
             set_points[0] = set_points_mean
-        elif abs(
-                current_sp - set_points_mean) > dist_to_skip:  # and abs(set_points_mean-min(set_points)) < abs(min(set_points) - self.min_dist):
+        # if the distance between current sp and mean sp is greater than dist to ignore
+        elif abs(current_sp - set_points_mean) > dist_to_skip:
+
+            # if mean is less than current the ROV goes up
             if set_points_mean < current_sp:
                 set_points[0] = set_points_mean
-            elif min(set_points) + desired_distance - set_points_mean > min_dist:
+                # if the mean value is greater than current set point, and it wont reduce the depth if it have to go back up.
+            elif set_points_mean - set_points[0] < desired_distance - min_dist and set_points_mean - min(
+                    set_points) < desired_distance - min_dist:
                 set_points[0] = set_points_mean
             else:
-                set_points[0] = current_sp
+                set_points[0] = min(set_points)
+
         else:
             set_points[0] = current_sp
         return set_points
