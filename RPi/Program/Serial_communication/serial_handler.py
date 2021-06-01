@@ -34,7 +34,7 @@ class SerialHandler(Thread):
         self.VALID_SENSOR_LIST = ['depth', 'pressure', 'temperature',
                                   'wing_pos_port', 'wing_pos_sb',
                                   'yaw', 'roll', 'pitch', 'depth_beneath_rov',
-                                  'vertical_acceleration']
+                                  'vertical_acceleration','set_point_depth']
         self.serial_message_received_handler = SerialMessageRecivedHandler(self.gui_command_queue, self.sensor_list,
                                                                            self.VALID_SENSOR_LIST, self.reader_queue)
         self.serial_message_received_handler.daemon = True

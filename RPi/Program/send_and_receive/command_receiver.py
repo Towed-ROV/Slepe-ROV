@@ -34,4 +34,4 @@ class CommandReceiver(Thread):
                 self.cmd_queue.put(cmd)
                 self.send({"success" : True})
             except (Exception) as e:
-                print(e, 'kukk')
+                print(e, 'CommandReceiver')

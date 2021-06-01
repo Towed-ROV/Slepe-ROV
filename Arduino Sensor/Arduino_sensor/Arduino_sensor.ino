@@ -426,37 +426,37 @@ void translateString(String s) {
     depth_beneath_rov_offset = part02.toFloat();
     responde("depth_beneath_rov_offset:True");
   }
-  else if (part01.equals("a0")) {
+  else if (part01.equals("A0")) {
     a0 = part02;
-    responde("a0:True");
+    responde("A0:True");
   }
-  else if (part01.equals("a1")) {
+  else if (part01.equals("A1")) {
     a1 = part02;
-    responde("a1:True");
+    responde("A1:True");
   }
-  else if (part01.equals("a2")) {
+  else if (part01.equals("A2")) {
     a2 = part02;
-    responde("a1:True");
+    responde("A2:True");
   }
-  else if (part01.equals("a3")) {
+  else if (part01.equals("A3")) {
     a3 = part02;
-    responde("a1:True");
+    responde("A3:True");
   }
-  else if (part01.equals("d2")) {
+  else if (part01.equals("D2")) {
     d2 = part02;
-    responde("d2:True");
+    responde("D2:True");
   }
-  else if (part01.equals("d3")) {
+  else if (part01.equals("D3")) {
     d3 = part02;
-    responde("d3:True");
+    responde("D3:True");
   }
-  else if (part01.equals("d4")) {
+  else if (part01.equals("D4")) {
     d4 = part02;
-    responde("d4:True");
+    responde("D4:True");
   }
-  else if (part01.equals("software_uart")) {
+  else if (part01.equals("Software_uart")) {
     software_uart = part02;
-    responde("software_uart:True");
+    responde("Software_uart:True");
   }
 }
 

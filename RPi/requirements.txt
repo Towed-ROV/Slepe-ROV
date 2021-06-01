@@ -2,3 +2,4 @@ pyzmq
 pyserial
 numpy
 opencv-python
+pigpio
