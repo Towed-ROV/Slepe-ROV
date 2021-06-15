@@ -106,7 +106,73 @@ void setup() {
 }
 
 
+void loop() {
 
+
+  if (has_been_reset) {
+    unsigned long update_wing_pos = millis() - last_update_wing_pos;
+    switch (target_mode) {
+
+      case MANUAL_MODE:
+        wing_angle_sb = constrain(manual_wing_pos, -max_wing_angle, max_wing_angle);
+        wing_angle_port = constrain(manual_wing_pos, -max_wing_angle, max_wing_angle);
+        break;
+
+
+      case AUTO_DEPTH_MODE:
+
+        pid_depth.Compute();
+        Serial.print("wing angle: ");
+        Serial.println(wing_angle);
+        pid_trim.Compute();
+        if (trim_angle != 0) {
+          trimWingPos();
+        } else {
+          wing_angle_sb = wing_angle;
+          wing_angle_port = wing_angle;
+        }
+        break;
+    }
+    compensateWingToPitch();
+
+    int step_position_sb = map(wing_angle_sb, -max_wing_angle, max_wing_angle, min_stepper_pos, max_stepper_pos);
+    int step_position_port = map(wing_angle_port, -max_wing_angle, max_wing_angle, min_stepper_pos, max_stepper_pos);
+
+    if (step_position_sb != current_pos_sb) {
+      moveStepperSb(step_position_sb);
+    }
+
+
+    if (step_position_port != current_pos_port) {
+      moveStepperPort(step_position_port);
+    }
+
+
+    if (update_wing_pos > time_intervall)
+    {
+      updateWingPosGUI(current_pos_sb, current_pos_port);
+      last_update_wing_pos = millis();
+    }
+  }
+
+
+
+  char c = ' ';
+
+  if (Serial.available()) {
+    c = Serial.read();
+  }
+
+  if (c == '>') {
+    data_string.trim();
+    translateString(data_string);
+    data_string = "";
+
+  } else if (c != ' ' && c != '\n' && c != '<') {
+    data_string +=  c;
+  }
+
+}
 
 
 
@@ -169,7 +235,7 @@ void moveStepperPort(int desired_pos) {
 
 
 /**
-  Set a new target mode  
+  Set a new target mode
    @param The desired target mode.
 
 */
@@ -216,13 +282,13 @@ void compensateWingToPitch() {
 */
 void trimWingPos() {
   if (wing_angle + trim_angle > max_wing_angle) {
-    
+
     wing_angle_sb = max_wing_angle;
-    wing_angle_port = max_wing_angle - 2*trim_angle;
+    wing_angle_port = max_wing_angle - 2 * trim_angle;
   }
   else if (wing_angle - trim_angle < -max_wing_angle) {
-    
-    wing_angle_sb = -max_wing_angle + 2*trim_angle;
+
+    wing_angle_sb = -max_wing_angle + 2 * trim_angle;
     wing_angle_port = -max_wing_angle;
   } else {
     wing_angle_sb = wing_angle - trim_angle;
@@ -268,7 +334,7 @@ void updateWingPosGUI(double pos_sb, double pos_port) {
     dataToSend.concat(">");
     Serial.println(dataToSend);
   } else {
-    
+
     double current_angle_sb = mapf(pos_sb, min_stepper_pos, max_stepper_pos, -max_wing_angle, max_wing_angle);
     String dataToSend = "<wing_pos_sb:";
     dataToSend.concat(current_angle_sb + pitch);
@@ -334,11 +400,11 @@ void translateString(String s) {
 
   else if (part01.equals("depth")) {
     depth = part02.toInt();
-    
+
 
   }
 
-    else if (part01.equals("roll")) {
+  else if (part01.equals("roll")) {
     roll = part02.toDouble();
 
   }
@@ -502,84 +568,5 @@ void resetStepper() {
   has_been_reset = true;
 
 
-
-}
-
-void loop() {
-   
-  if(testFlag){
-    has_been_reset = true;
-    pid_depth_i = 1;
-    pid_depth_p = .1;
-    setTargetMode(0,0);
-    
-    testFlag = false;
-  }
-  else{
-    depth = 10;
-    delay(100);
-  }
-  if (has_been_reset) {
-    unsigned long update_wing_pos = millis() - last_update_wing_pos;
-    switch (target_mode) {
-
-      case MANUAL_MODE:
-        wing_angle_sb = constrain(manual_wing_pos, -max_wing_angle, max_wing_angle);
-        wing_angle_port = constrain(manual_wing_pos, -max_wing_angle, max_wing_angle);
-        break;
-
-
-      case AUTO_DEPTH_MODE:
-
-        pid_depth.Compute();
-        Serial.print("wing angle: ");
-        Serial.println(wing_angle);
-        pid_trim.Compute();
-        if (trim_angle != 0) {
-          trimWingPos();
-        } else {
-          wing_angle_sb = wing_angle;
-          wing_angle_port = wing_angle;
-        }
-        break;
-    }
-    compensateWingToPitch();
-
-    int step_position_sb = map(wing_angle_sb, -max_wing_angle, max_wing_angle, min_stepper_pos, max_stepper_pos);
-    int step_position_port = map(wing_angle_port, -max_wing_angle, max_wing_angle, min_stepper_pos, max_stepper_pos);
-
-    if (step_position_sb != current_pos_sb) {
-      moveStepperSb(step_position_sb);
-    }
-
-
-    if (step_position_port != current_pos_port) {
-      moveStepperPort(step_position_port);
-    }
-
-
-    if (update_wing_pos > time_intervall)
-    {
-      updateWingPosGUI(current_pos_sb, current_pos_port);
-      last_update_wing_pos = millis();
-    }
-  }
-
-
-
-  char c = ' ';
-
-  if (Serial.available()) {
-    c = Serial.read();
-  }
-
-  if (c == '>') {
-    data_string.trim();
-    translateString(data_string);
-    data_string = "";
-
-  } else if (c != ' ' && c != '\n' && c != '<') {
-    data_string +=  c;
-  }
 
 }
