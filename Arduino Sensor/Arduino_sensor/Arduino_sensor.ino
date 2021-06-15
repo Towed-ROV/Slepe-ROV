@@ -2,10 +2,15 @@
 #include <Wire.h>
 #include "MS5837.h"
 #include "SoftwareSerial.h"
+#include <Adafruit_FXOS8700.h>
+#include <Adafruit_FXAS21002C.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_LSM303_U.h>
-#include <Adafruit_L3GD20_U.h>
 #include <Adafruit_9DOF.h>
+
+
+Adafruit_FXOS8700 accelmag = Adafruit_FXOS8700(0x8700A, 0x8700B);
+Adafruit_FXAS21002C gyro = Adafruit_FXAS21002C(0x0021002C);
+Adafruit_9DOF                dof   = Adafruit_9DOF();
 #include <SimpleKalmanFilter.h>
 static const uint8_t arduinoRxPin = 15; //Serial1 rx
 static const uint8_t arduinoTxPin = 14; //Serial1 tx
@@ -63,12 +68,6 @@ unsigned long previous_imu_update = 0;
 String inputString = "";
 bool stringComplete = false;
 
-/* Assign a unique ID to the IMU sensors */
-Adafruit_9DOF                dof   = Adafruit_9DOF();
-Adafruit_LSM303_Accel_Unified accel = Adafruit_LSM303_Accel_Unified(30301);
-Adafruit_LSM303_Mag_Unified   mag   = Adafruit_LSM303_Mag_Unified(30302);
-Adafruit_L3GD20_Unified gyro = Adafruit_L3GD20_Unified(20);
-
 const float ALPHA_COMP_FILTER = 0.94;
 const float ALPHA_LP_FILTER = 0.05;
 const float calibration_gyro_Y = -0.028018;
@@ -88,7 +87,9 @@ float accel_y = 0;
 float accel_z = 0;
 float vertical_accel = 0;
 
-
+float z_calibration = -0.412;
+float y_calibration = -0.1195;
+float x_calibration = -0.2095;
 SimpleKalmanFilter pressureKalmanFilter(0.08, 1000, 0.01);
 
 
@@ -96,18 +97,13 @@ SimpleKalmanFilter pressureKalmanFilter(0.08, 1000, 0.01);
 int count = 0;
 void initSensors()
 {
-  if (!accel.begin())
+  if (!accelmag.begin(ACCEL_RANGE_4G))
   {
     /* There was a problem detecting the LSM303 ... check your connections */
     Serial.println(F("Ooops, no LSM303 detected ... Check your wiring!"));
     while (1);
   }
-  if (!mag.begin())
-  {
-    /* There was a problem detecting the LSM303 ... check your connections */
-    Serial.println(F("Ooops, no LSM303 detected ... Check your wiring!"));
-    while (1);
-  }
+
   if (!gyro.begin())
   {
     /* There was a problem detecting the L3GD20 ... check your connections */
@@ -118,11 +114,9 @@ void initSensors()
 
 void set_init_values()
 {
-  sensors_event_t accel_event;
-  sensors_event_t mag_event;
   sensors_vec_t   orientation;
-  accel.getEvent(&accel_event);
-  mag.getEvent(&mag_event);
+  sensors_event_t accel_event, mag_event;
+  accelmag.getEvent(&accel_event, &mag_event);
   if (dof.accelGetOrientation(&accel_event, &orientation)) {
     accel_x = accel_event.acceleration.x;
     accel_y = accel_event.acceleration.y;
@@ -136,14 +130,33 @@ void set_init_values()
     yaw = orientation.heading;
   }
 }
+void calibrate_gyro() {
+  int n_cycles = 200;
+  double x_tot = 0;
+  double y_tot = 0;
+  double z_tot = 0;
+  for (int i = 1; i <= n_cycles; i++) {
+    sensors_vec_t   orientation;
+    sensors_event_t accel_event, mag_event, gyro_event;
+    gyro.getEvent(&gyro_event);
+    x_tot += gyro_event.gyro.x * 180 / PI;
+    y_tot += gyro_event.gyro.y * 180 / PI;
+    z_tot += gyro_event.gyro.z * 180 / PI;
 
+
+    delay(10);
+  }
+  x_calibration = -x_tot / n_cycles;
+  y_calibration = -y_tot / n_cycles;
+  z_calibration = -z_tot / n_cycles;
+}
 
 void setup() {
   // Use 9600 bits per second to communicate with the Ping dev  ice
-  Serial3.begin(9600);
+  Serial2.begin(9600);
 
   // Use built in Serial port to communicate with the Arduino IDE Serial Monitor
-  Serial.begin(57600);
+  Serial1.begin(57600);
   delay(1000);
   Serial.println("<SensorArduino:0>");  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(D2, OUTPUT);
@@ -165,6 +178,7 @@ void setup() {
   sensor.setFluidDensity(1029); // kg/m^3 (freshwater, 1029 for seawater)
   gyro.enableAutoRange(true);
   initSensors();
+  calibrate_gyro();
   set_init_values();
   while (!Serial) {
     //wait to connect
@@ -196,7 +210,7 @@ void loop() {
   //read sensor data and sends as char array one at a time
   float dt_imu = millis() - previous_imu_update;
   if (dt_imu >= imu_intervall)
-    updateImuData(dt_imu);
+    sensor_fusion(dt_imu);
   previous_imu_update = millis();
 
   unsigned long currentMillis = millis();
@@ -323,24 +337,40 @@ void loop() {
 
 
 }
+void sensor_fusion(float dt) {
+  sensors_vec_t   orientation;
+  sensors_event_t accel_event, mag_event, gyro_event;
 
+  gyro.getEvent(&gyro_event);
+  /* Get a new sensor event */
+  accelmag.getEvent(&accel_event, &mag_event);
+  if (dof.accelGetOrientation(&accel_event, &orientation))
+  {
+   
+    double alpha = 0.92;
+    double gyro_pitch = gyro_event.gyro.y * 180 / PI + y_calibration;
+    double gyro_roll = gyro_event.gyro.x * 180 / PI + x_calibration;
+
+    pitch = complementary_filter(alpha, pitch, -gyro_pitch, orientation.pitch, dt);
+    roll = complementary_filter(alpha, roll, gyro_roll, orientation.roll, dt);  
+
+
+}
+}
 void updateImuData(unsigned long dt_imu) {
   dt_imu = dt_imu * 0.001;
   float pitch_acc = pitch;
   float roll_acc = roll;
   float yaw_acc = yaw;
 
-  sensors_event_t event;
-  gyro.getEvent(&event);
-  double pitch_gyro = -(event.gyro.y + calibration_gyro_Y) * 180 / PI;
-  double roll_gyro =  -(event.gyro.x + calibration_gyro_X) * 180 / PI;
-  double yaw_gyro = -(event.gyro.z + calibration_gyro_Z) * 180 / PI;
-
   sensors_vec_t   orientation;
-  sensors_event_t accel_event;
-  sensors_event_t mag_event;
-  accel.getEvent(&accel_event);
-  mag.getEvent(&mag_event);
+  sensors_event_t accel_event, mag_event, gyro_event;
+  double pitch_gyro = -(gyro_event.gyro.y + calibration_gyro_Y) * 180 / PI;
+  double roll_gyro =  -(gyro_event.gyro.x + calibration_gyro_X) * 180 / PI;
+  double yaw_gyro = -(gyro_event.gyro.z + calibration_gyro_Z) * 180 / PI;
+
+  
+  accelmag.getEvent(&accel_event, &mag_event);
   if (dof.accelGetOrientation(&accel_event, &orientation) && dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
   {
     pitch_acc = orientation.pitch;
@@ -352,7 +382,6 @@ void updateImuData(unsigned long dt_imu) {
 
 
   }
-  pitch_acc = rotate_imu_measurements(pitch_acc);
   pitch = complementary_filter(ALPHA_COMP_FILTER, pitch, pitch_gyro, pitch_acc, dt_imu);
   roll = complementary_filter(ALPHA_COMP_FILTER, roll, roll_gyro, roll_acc, dt_imu);
   yaw = complementary_filter(ALPHA_COMP_FILTER, yaw, yaw_gyro, yaw_acc, dt_imu);
@@ -384,19 +413,6 @@ float getVerticalAcceleration(float roll_angle, float pitch_angle, float accel_x
   return -accel_vertical_y - accel_vertical_x + accel_vertical_z;
 }
 
-float rotate_imu_measurements(float angle) {
-
-  if (abs(angle) == 180) {
-    angle = 0;
-  }
-  else if (angle <= 0) {
-    angle = angle + 180;
-  } else {
-    angle = angle - 180;
-  }
-  return angle;
-
-}
 //separates string message
 String getValue(String data, char separator, int index) {
   int found = 0;
