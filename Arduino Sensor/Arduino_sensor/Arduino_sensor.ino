@@ -12,10 +12,11 @@ Adafruit_FXOS8700 accelmag = Adafruit_FXOS8700(0x8700A, 0x8700B);
 Adafruit_FXAS21002C gyro = Adafruit_FXAS21002C(0x0021002C);
 Adafruit_9DOF                dof   = Adafruit_9DOF();
 #include <SimpleKalmanFilter.h>
-static const uint8_t arduinoRxPin = 15; //Serial1 rx
-static const uint8_t arduinoTxPin = 14; //Serial1 tx
-static Ping1D ping { Serial3 };
-SoftwareSerial software_serial { 11, 12 };
+const int LEAKAGE_DETECTOR = 14;
+static const uint8_t arduinoRxPin = 7; //Serial1 rx
+static const uint8_t arduinoTxPin = 8; //Serial1 tx
+static Ping1D ping { Serial2 };
+SoftwareSerial software_serial { 20, 21 };
 
 const int UPDATE_DEPTH = 0;
 const int UPDATE_PING = 1;
@@ -70,9 +71,9 @@ bool stringComplete = false;
 
 const float ALPHA_COMP_FILTER = 0.94;
 const float ALPHA_LP_FILTER = 0.05;
-const float calibration_gyro_Y = -0.028018;
-const float calibration_gyro_X = 0.103667;
-const float calibration_gyro_Z = -0.024099;
+float calibration_gyro_X = -0.49656;
+float calibration_gyro_Y = 0.01109;
+float calibration_gyro_Z = -1.17348;
 
 
 float roll_to_send = 0;
@@ -87,9 +88,6 @@ float accel_y = 0;
 float accel_z = 0;
 float vertical_accel = 0;
 
-float z_calibration = -0.412;
-float y_calibration = -0.1195;
-float x_calibration = -0.2095;
 SimpleKalmanFilter pressureKalmanFilter(0.08, 1000, 0.01);
 
 
@@ -146,9 +144,9 @@ void calibrate_gyro() {
 
     delay(10);
   }
-  x_calibration = -x_tot / n_cycles;
-  y_calibration = -y_tot / n_cycles;
-  z_calibration = -z_tot / n_cycles;
+  calibration_gyro_X = -x_tot / n_cycles;
+  calibration_gyro_Y = -y_tot / n_cycles;
+  calibration_gyro_Z = -z_tot / n_cycles;
 }
 
 void setup() {
@@ -156,12 +154,13 @@ void setup() {
   Serial2.begin(9600);
 
   // Use built in Serial port to communicate with the Arduino IDE Serial Monitor
-  Serial1.begin(57600);
+  Serial.begin(57600);
   delay(1000);
   Serial.println("<SensorArduino:0>");  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(D2, OUTPUT);
   pinMode(D3, OUTPUT);
   pinMode(D4, OUTPUT);
+  pinMode(LEAKAGE_DETECTOR, INPUT)
   //  software_serial.begin(4800);
   // wait until communication with the Ping device is established
   // and the Ping device is successfully initialized
@@ -220,9 +219,13 @@ void loop() {
 
 
     // reads sensor data
-
-
-    if (turnToSend == UPDATE_DEPTH)
+    // pullup on leakage detector. Normally high
+    if (digitalRead(LEAKAGE_DETECTOR) == LOW) {
+      Serial.print(F("<water_leakage: "));
+      Serial.print("True");
+      Serial.println(F(">"));
+    }
+    else if (turnToSend == UPDATE_DEPTH)
     {
       char str_depth[6]; // Depth
       for (int i = 0; i < 6; i++) {
@@ -259,12 +262,12 @@ void loop() {
       Serial.println(string_to_rpi2);
       turnToSend = UPDATE_PITCH;
       previousMillis = currentMillis;
-      
+
     }
     else if (turnToSend == UPDATE_PITCH)
     {
       Serial.print(F("<pitch: "));
-      Serial.print(roll);
+      Serial.print(pitch);
       Serial.println(F(">"));
       turnToSend = UPDATE_ROLL;
       previousMillis = currentMillis;
@@ -272,11 +275,11 @@ void loop() {
     else if (turnToSend == UPDATE_ROLL)
     {
       Serial.print(F("<roll: "));
-      Serial.print(-pitch + 6);
+      Serial.print(roll);
       Serial.println(F(">"));
-      turnToSend = UPDATE_ACCELERATION;
+      turnToSend = UPDATE_DEPTH;
       previousMillis = currentMillis;
-      vertical_accel = getVerticalAcceleration(-pitch, roll, accel_x, accel_y, accel_z);
+      // vertical_accel = getVerticalAcceleration(-pitch, roll, accel_x, accel_y, accel_z);
     }
     else if (turnToSend == UPDATE_ACCELERATION)
     {
@@ -332,12 +335,14 @@ void loop() {
 
     }
 
+
     previousMillis = millis();
   }
 
 
 }
 void sensor_fusion(float dt) {
+  dt = dt * 0.001;
   sensors_vec_t   orientation;
   sensors_event_t accel_event, mag_event, gyro_event;
 
@@ -346,16 +351,16 @@ void sensor_fusion(float dt) {
   accelmag.getEvent(&accel_event, &mag_event);
   if (dof.accelGetOrientation(&accel_event, &orientation))
   {
-   
-    double alpha = 0.92;
-    double gyro_pitch = gyro_event.gyro.y * 180 / PI + y_calibration;
-    double gyro_roll = gyro_event.gyro.x * 180 / PI + x_calibration;
 
-    pitch = complementary_filter(alpha, pitch, -gyro_pitch, orientation.pitch, dt);
-    roll = complementary_filter(alpha, roll, gyro_roll, orientation.roll, dt);  
+    double alpha = 0.9;
+    double gyro_pitch = gyro_event.gyro.y * 180 / PI + calibration_gyro_X;
+    double gyro_roll = gyro_event.gyro.x * 180 / PI + calibration_gyro_X;
+
+    pitch = complementary_filter(alpha, pitch, gyro_pitch, orientation.pitch, dt);
+    roll = complementary_filter(alpha, roll, gyro_roll, orientation.roll, dt);
 
 
-}
+  }
 }
 void updateImuData(unsigned long dt_imu) {
   dt_imu = dt_imu * 0.001;
@@ -369,7 +374,7 @@ void updateImuData(unsigned long dt_imu) {
   double roll_gyro =  -(gyro_event.gyro.x + calibration_gyro_X) * 180 / PI;
   double yaw_gyro = -(gyro_event.gyro.z + calibration_gyro_Z) * 180 / PI;
 
-  
+
   accelmag.getEvent(&accel_event, &mag_event);
   if (dof.accelGetOrientation(&accel_event, &orientation) && dof.magGetOrientation(SENSOR_AXIS_Z, &mag_event, &orientation))
   {
@@ -384,8 +389,8 @@ void updateImuData(unsigned long dt_imu) {
   }
   pitch = complementary_filter(ALPHA_COMP_FILTER, pitch, pitch_gyro, pitch_acc, dt_imu);
   roll = complementary_filter(ALPHA_COMP_FILTER, roll, roll_gyro, roll_acc, dt_imu);
-  yaw = complementary_filter(ALPHA_COMP_FILTER, yaw, yaw_gyro, yaw_acc, dt_imu);
-
+  //yaw = complementary_filter(ALPHA_COMP_FILTER, yaw, yaw_gyro, yaw_acc, dt_imu);
+  yaw = 0;
 }
 
 float complementary_filter(float alpha, float prev_angle, float gyro_value, float accel_value, float dt) {
@@ -402,8 +407,8 @@ float getVerticalAcceleration(float roll_angle, float pitch_angle, float accel_x
   //the imu is rotated in the rov
   pitch_angle = pitch_angle * PI / 180; //degrees to radians
   roll_angle = roll_angle * PI / 180;
-    roll_angle += PI / 2; //rotate measured angles
-    pitch_angle += PI / 2;
+  roll_angle += PI / 2; //rotate measured angles
+  pitch_angle += PI / 2;
   float accel_vertical_x = accel_x * cos(pitch_angle) * sin(roll_angle) /
                            sqrt(cos(roll_angle) * cos(roll_angle) * sin(pitch_angle) * sin(pitch_angle) + sin(roll_angle) * sin(roll_angle));
   float accel_vertical_y = accel_y * sin(pitch_angle) * cos(roll_angle) /
