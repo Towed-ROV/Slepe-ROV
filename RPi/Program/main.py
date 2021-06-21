@@ -6,9 +6,11 @@ from payloads.payload_writer import PayloadWriter
 from payloads.payload_handler import PayloadHandler
 from Serial_communication.serial_handler import SerialHandler
 from multiprocessing import Event, Queue
+from alarm import Alarm
 
 arduino_command_queue = Queue()
 sensor_list = []
+alarm_list = []
 gui_command_queue = Queue()
 seafloor_sonar_queue = queue.Queue()
 flag_queue = queue.Queue()
@@ -19,15 +21,20 @@ start_event = Event()
 stop_event = Event()
 thread_running_event = Event()
 
+#append alarms
+alarm1 = Alarm('water_leakage', 'False')
+alarm2 = Alarm('no_legal_sp', 'False')
+alarm3 = Alarm('incline_too_steep', 'False')
+alarm_list.append(alarm1, alarm2, alarm3)
 #Creating threads
 payload_handler = PayloadHandler(sensor_list, arduino_command_queue, gui_command_queue,
                                  seafloor_sonar_queue, new_set_point_event,
                                  start_event, stop_event)
 
-payload_writer = PayloadWriter(sensor_list, gui_command_queue, thread_running_event)
-serial_handler = SerialHandler(sensor_list, arduino_command_queue, gui_command_queue,
+payload_writer = PayloadWriter(sensor_list, alarm_list, gui_command_queue, thread_running_event)
+serial_handler = SerialHandler(sensor_list, alarm_list, arduino_command_queue, gui_command_queue,
                                        set_point_queue, rov_depth_queue, thread_running_event)
-sea_floor_tracker = SeafloorTracker(150, 20, 20, 6, 10, seafloor_sonar_queue, new_set_point_event, set_point_queue)
+sea_floor_tracker = SeafloorTracker(150, 20, 20, 6, 10, seafloor_sonar_queue, new_set_point_event, set_point_queue, alarm_list)
 
 payload_handler.daemon = True
 payload_handler.start()

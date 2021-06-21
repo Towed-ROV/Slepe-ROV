@@ -12,7 +12,7 @@ from time import sleep
 
 class SeafloorTracker(Thread):
     def __init__(self, length_rope, desired_distance, min_dist, dist_to_skip,
-                 depth_of_rov, depth_beneath_boat, new_set_point_event, set_point_queue):
+                 depth_of_rov, depth_beneath_boat, new_set_point_event, set_point_queue, alarm_list):
         Thread.__init__(self)
         self.length_rope = length_rope
         self.desired_distance = desired_distance
@@ -27,6 +27,7 @@ class SeafloorTracker(Thread):
         self.new_set_point_event = new_set_point_event
         self.set_point_queue = set_point_queue
         self.array_count = 0
+        self.alarm_list = alarm_list
 
     def run(self):
         while True:
@@ -58,6 +59,8 @@ class SeafloorTracker(Thread):
             self.set_points_full = True
         else:
             self.array_count = self.array_count + 1
+        if alarm is True:
+            self.set_points[0] = 0
         return self.set_points[0]
 
 
@@ -105,6 +108,9 @@ class SeafloorTracker(Thread):
             new_sp = legal_set_points[min_cost_idx]
         else:
             alarm_flag = True
+            for alarm in self.alarm_list:
+                if alarm.get_sensor_name() == 'no_legal_sp':
+                    alarm.set_alarm_value('True')
         return new_sp, alarm_flag
 
     def __find_opt_sp(self, set_points, current_sp, depth_rov, desired_distance, min_dist, dist_to_skip):
@@ -116,7 +122,14 @@ class SeafloorTracker(Thread):
         Returns:
             [type]: [description]
         """
+        alarm = False
         set_points_mean = round(np.mean(set_points))
+        #If the incline is too steep, set alarm = true and send message to GUI --> example
+        if depth_rov-set_points[-1]>9999:
+            alarm = True
+            for alarm in self.alarm_list:
+                if alarm.get_sensor_name() == 'no_legal_sp':
+                    alarm.set_alarm_value('True')
 
         # If the ROV is on colision course every set point is set to a safe distance giving it time to go up
         if current_sp - set_points[-1] > desired_distance - min_dist or depth_rov - set_points[
@@ -155,7 +168,7 @@ class SeafloorTracker(Thread):
         elif difference <= -1:
             idx = np.arange(abs(difference))
             new_matrix = np.delete(matrix_to_change, idx)
-        return new_matrix
+        return new_matrix, alarm
 
 
 if __name__ == "__main__":
