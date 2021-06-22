@@ -128,7 +128,7 @@ class SeafloorTracker(Thread):
         if depth_rov-set_points[-1]>9999:
             alarm = True
             for alarm in self.alarm_list:
-                if alarm.get_sensor_name() == 'no_legal_sp':
+                if alarm.get_sensor_name() == 'incline_too_steep':
                     alarm.set_alarm_value('True')
 
         # If the ROV is on colision course every set point is set to a safe distance giving it time to go up

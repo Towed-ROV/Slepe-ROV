@@ -20,7 +20,7 @@ class SerialMessageRecivedHandler(Thread):
                                'depth_beneath_rov_offset', 'depth_rov_offset', 'pid_depth_p',
                                'pid_depth_i', 'pid_depth_d', 'pid_roll_p', 'pid_roll_i', 'pid_roll_d',
                                'auto_mode', 'manual_wing_pos', 'set_point_depth',
-                               'emergency_surface', 'water_leakage'
+                               'emergency_surface'
                                ]
         self.message_queue = message_queue
         self.count = 0
