@@ -160,7 +160,7 @@ void setup() {
   pinMode(D2, OUTPUT);
   pinMode(D3, OUTPUT);
   pinMode(D4, OUTPUT);
-  pinMode(LEAKAGE_DETECTOR, INPUT)
+  pinMode(LEAKAGE_DETECTOR, INPUT);
   //  software_serial.begin(4800);
   // wait until communication with the Ping device is established
   // and the Ping device is successfully initialized
