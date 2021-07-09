@@ -1,18 +1,10 @@
 import json
 import zmq
 from threading import Thread
-
-
 class MessageReceiver(Thread):
-    """ZMQ subscriber running in a seperate thread to poll data from the onshore RPi in suitcase.
-
-    SUB / PUB is connectionless, so it doesnt care if you disconnect, it will
-    continously try to re-read from the socket. So any disconnect / reloads or similar doesnt matter,
-    because the subscriber will always listen for reconnects
-    """
     def __init__(self, queue):
         Thread.__init__(self)
-        self.ip = 'tcp://192.168.0.110:8765'
+        self.ip = 'tcp://192.168.0.20:8764'
         context = zmq.Context()
         self.socket = context.socket(zmq.SUB)
         self.socket.connect(self.ip)
@@ -22,13 +14,13 @@ class MessageReceiver(Thread):
     def run(self):
         while True:
             try:
-                self.recv()
+                self.subscribe()
             except zmq.ZMQError:
                 print('could not receive data')
             except (Exception)as e:
                 print(e, 'sada')
 
-    def recv(self):
+    def subscribe(self):
         """
         read data and append to queue
         """

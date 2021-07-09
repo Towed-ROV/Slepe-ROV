@@ -1,11 +1,7 @@
 import pigpio
-
-
 class GPIOWriter:
-    """
-    Writes PWM signal to the GPIO output for controlling servo and lights.
-    """
     def __init__(self):
+
         self.pin_led_lights = 12
         self.pin_camera_tilt = 18
         self.camera_tilt_offset = 0
@@ -14,8 +10,7 @@ class GPIOWriter:
         self.camera_tilt = pigpio.pi()
         self.camera_tilt.set_mode(self.pin_camera_tilt, pigpio.OUTPUT)
         self.adjust_camera(0)
-        self.pitch = 0
-
+        self.pitch =0
     def set_lights(self, brightness):
         """
         Sets the given brightness to the led lights
@@ -27,9 +22,8 @@ class GPIOWriter:
         in_max = 100
         PWM = self.__map(brightness, in_max, in_min, out_max, out_min)
         print(PWM)
-        self.lights.set_PWM_dutycycle(self.pin_led_lights, 255)
+        self.lights.set_servo_pulsewidth(self.pin_led_lights, PWM)
         return True
-
     def adjust_camera(self, pitch):
         """
         adjust the pitch of the camera according to pitch of rov, so camera is always horizontal.
@@ -43,8 +37,8 @@ class GPIOWriter:
         adjusted_pitch = self.pitch + self.camera_tilt_offset
         pwm = self.__map(adjusted_pitch, in_max, in_min, out_max, out_min)
         self.camera_tilt.set_servo_pulsewidth(self.pin_camera_tilt, pwm)
-
-    #         print(self.camera_tilt.get_servo_pulsewidth(self.pin_camera_tilt),'dfs')
+        
+#         print(self.camera_tilt.get_servo_pulsewidth(self.pin_camera_tilt),'dfs')
 
     def __map(self, in_value, in_max, in_min, out_max, out_min):
         """
@@ -67,8 +61,6 @@ class GPIOWriter:
         self.camera_tilt_offset = offset
         self.adjust_camera(self.pitch)
         return True
-
-
 if __name__ == '__main__':
     gpi = GPIOWriter()
     while True:

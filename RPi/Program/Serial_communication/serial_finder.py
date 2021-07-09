@@ -1,13 +1,9 @@
 import glob
 import serial
-import sys
 from time import sleep 
-
+import sys
 
 class SerialFinder:
-    """
-    Finding all available serial ports and check each if they are the correct one and returns a list of these.
-    """
     def __init__(self):
         self.port_name_list = {}
         self.seperation_char = ':'
@@ -31,7 +27,6 @@ class SerialFinder:
                 # if 'dev' in key:
                 serial_port = serial.Serial(key, self.baud_rate, timeout=1,
                                             stopbits=1, bytesize=8)
-                serial_port.write("<reset:True>".encode('utf-8'))
                 print(key)
                 print(self.baud_rate)
                 try:
@@ -51,10 +46,12 @@ class SerialFinder:
                                 self.port_name_list[key] = 'SensorArduino'
                                 print('Found SensorArduino')
                                 print(self.baud_rate)
+                                serial_port.write("<start:True>".encode('utf-8'))
 
                             elif 'StepperArduino' in port_name:
                                 self.port_name_list[key] = 'StepperArduino'
                                 print('Found StepperArduino')
+                                serial_port.write("<start:True>".encode('utf-8'))
                         serial_port.reset_input_buffer()
                         serial_port.close()
                 except (Exception) as e:
@@ -71,8 +68,8 @@ class SerialFinder:
 
     def get_available_com_ports(self):
         """
-        find all available com port on Windows or linux systems
-        :return: dict with all com ports
+        find all available com port on rpi
+        :return: dict with all com ports on rpi
         """
 
         if sys.platform.startswith('win'):
@@ -94,7 +91,26 @@ class SerialFinder:
             except (OSError, serial.SerialException):
                 pass
         return result
-
+        # ports = glob.glob('/dev/tty[A-Za-z]*')
+        # port_names = []
+        # port_exceptions = ['dev/ttyprintk']
+        # i = 0
+        # while i < 3:
+        #     for port in port_exceptions:
+        #         if port in ports:
+        #             ports.remove(port)
+        #     for port in ports:
+        #         try:
+        #             s = serial.Serial(port, self.baud_rate, timeout=0)
+        #             port_names.append(port)
+        #         except (OSError, serial.SerialException):
+        #             pass
+        #         sleep(0.2)
+        #     i = i + 1
+        # if not port_names:
+        #     print('There are no serial-ports available')
+        # port_names = list(dict.fromkeys(port_names))
+        # return list(port_names)
 
 
 

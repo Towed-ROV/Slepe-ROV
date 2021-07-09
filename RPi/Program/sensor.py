@@ -1,7 +1,4 @@
 class Sensor:
-    """
-    Reprecent sensor object storing the name and the value of a sensor
-    """
     def __init__(self, name, value):
         self.name = name
         self.value = value

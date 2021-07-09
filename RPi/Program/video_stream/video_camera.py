@@ -16,7 +16,7 @@ class VideoCamera():
             window_width (int, optional): [default cv2-size]. Defaults to 640.
             window_heigth (int, optional): [default cv2-size]. Defaults to 480.
         """
-        self.cap = cv2.VideoCapture(src)
+        self.cap = cv2.VideoCapture(0)
         self.window_heigth = window_heigth
         self.window_width = window_width
         self.is_interrupted = False
@@ -50,6 +50,7 @@ class VideoCamera():
             [bytes]: [output buffer]
         """
         frame = self.get_frame()
+        print(frame, "ok")
         _, frame_buffer = cv2.imencode('.JPEG', frame)  # self.encoder_quality
         return frame_buffer
 
