@@ -14,12 +14,12 @@ bool test_from_terminal = false;
 char charIn = ' ';
 char lastCharIn;
 //Defining pins connected to the arduino
-const int direction_pin_sb = 8;
-const int step_pin_sb = 5;
-const int sensor_sb = 6;
+const int direction_pin_sb = 2;
+const int step_pin_sb = 3;
+const int sensor_sb = 4;
 
-const int direction_pin_port = 10;
-const int step_pin_port = 9;
+const int direction_pin_port = 5;
+const int step_pin_port = 6;
 const int sensor_port = 7;
 
 //Stepper positions
@@ -73,13 +73,27 @@ unsigned long time_intervall = 50;
 unsigned long last_step_port = 0;
 unsigned long last_step_sb = 0;
 unsigned long last_update_wing_pos = 0;
+
+//Reset at start
+bool reset_ardu = false;
+
 // PID controllers
 PID pid_depth = PID(&depth, &wing_angle, &set_point_depth, pid_depth_p, pid_depth_i, pid_depth_d, REVERSE);
 PID pid_trim = PID(&roll, &trim_angle, &set_point_roll, pid_roll_p, pid_roll_i, pid_roll_i, DIRECT);
 
 void setup() {
   Serial.begin(57600);
-  Serial.println("<StepperArduino:0>");
+  while (!reset_ardu) {
+    Serial.println("<StepperArduino:0>");
+    String msg = Serial.readString();
+    String part01 = getValue(msg, ':', 0);
+
+    part01.replace("<", "");
+    if (part01 == "start") {
+      reset_ardu = true;
+    }
+  }
+
   //turn the PIDs on and set min/max output
   pid_depth.SetOutputLimits(-max_pid_output, max_pid_output);
   pid_trim.SetOutputLimits(-max_trim, max_trim);
@@ -276,13 +290,13 @@ void compensateWingToPitch() {
 */
 void trimWingPos() {
   if (wing_angle + trim_angle > max_wing_angle) {
-    
+
     wing_angle_sb = max_wing_angle;
-    wing_angle_port = max_wing_angle - 2*trim_angle;
+    wing_angle_port = max_wing_angle - 2 * trim_angle;
   }
   else if (wing_angle - trim_angle < -max_wing_angle) {
-    
-    wing_angle_sb = -max_wing_angle + 2*trim_angle;
+
+    wing_angle_sb = -max_wing_angle + 2 * trim_angle;
     wing_angle_port = -max_wing_angle;
   } else {
     wing_angle_sb = wing_angle - trim_angle;
@@ -304,7 +318,7 @@ void updateWingPosGUI(double pos_sb, double pos_port) {
     dataToSend.concat(">");
     Serial.println(dataToSend);
   } else {
-    
+
     double current_angle_sb = mapf(pos_sb, min_stepper_pos, max_stepper_pos, -max_wing_angle, max_wing_angle);
     String dataToSend = "<wing_pos_sb:";
     dataToSend.concat(current_angle_sb + pitch);
@@ -369,11 +383,11 @@ void translateString(String s) {
 
   else if (part01.equals("depth")) {
     depth = part02.toInt();
-    
+
 
   }
 
-    else if (part01.equals("roll")) {
+  else if (part01.equals("roll")) {
     roll = part02.toInt();
 
   }
