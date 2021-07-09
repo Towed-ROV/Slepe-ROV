@@ -10,28 +10,37 @@ class PayloadWriter(Thread):
     """
     Creates payload from received data from the Arduinos
     """
-    def __init__(self, sensor_list, gui_command_queue, thread_running_event):
+    def __init__(self, sensor_list, alarm_list, gui_command_queue, thread_running_event):
         Thread.__init__(self)
         self.sensor_list = sensor_list
+        self.alarm_list = alarm_list
         self.message_queue = Queue()
         self.gui_command_queue = gui_command_queue
         self.message_dispatcher = MessageDispatcher(self.message_queue)
-        self.interval = 0.1
+        self.interval_sensor = 0.1
+        self.interval_alarm = 3
         self.thread_running_event = thread_running_event
 
     def run(self):
         """
         Create responce command instant and a sensor command every 100ms
         """
-        previousMillis = 0
+        previous_sensor = 0
+        previous_alarm = 0
         while self.thread_running_event.is_set():
             self.__add_respons_to_queue()
             self.message_dispatcher.publish()
-            currentMillis  = time.monotonic()
-            if currentMillis - previousMillis >= self.interval:
+            self.__add_alarm_to_queue()
+            self.message_dispatcher.publish()
+            now  = time.monotonic()
+            if now - previous_sensor >= self.interval_sensor:
                 self.__merge_sensor_payload()
                 self.message_dispatcher.publish()
-                previousMillis = currentMillis
+                previous_sensor = now
+            if now - previous_alarm >= self.interval_alarm:
+                self.__merge_alarm_payload()
+                self.message_dispatcher.publish()
+                previous_alarm = now       
 
 
 
@@ -78,3 +87,21 @@ class PayloadWriter(Thread):
             pass
         except IndexError:
             pass
+
+    def __merge_alarm_payload(self):
+        """
+        Takes all alarms and creates a json with sensor data, adds the json to a queue.
+        """
+        alarms = []
+        if self.alarm_list:
+            for alarm in self.alarm_list:
+                alarm_name = alarm.name
+                alarm_value = alarm.value
+                alarms.append({"name" : alarm_name,
+                                "value" : alarm_value})
+            time.sleep(0.001)
+            alarm_structure = {
+                "payload_name": "alarms",
+                "payload_data": alarms
+            }
+            self.message_queue.put(alarm_structure)

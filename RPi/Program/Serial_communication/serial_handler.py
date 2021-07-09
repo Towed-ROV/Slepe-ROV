@@ -9,7 +9,7 @@ from Serial_communication.serial_message_recived_handler import SerialMessageRec
 
 
 class SerialHandler(Thread):
-    def __init__(self, sensor_list, arduino_command_queue, gui_command_queue, set_point_queue, rov_depth_queue,
+    def __init__(self, sensor_list, alarm_list, arduino_command_queue, gui_command_queue, set_point_queue, rov_depth_queue,
                  thread_running_event):
         """
 
@@ -20,6 +20,7 @@ class SerialHandler(Thread):
         self.from_arduino_to_arduino_queue = Queue()
         self.reader_queue = Queue()
         self.sensor_list = sensor_list
+        self.alarm_list = alarm_list
         self.writer_queue = arduino_command_queue
         self.writer_queue_IMU = Queue()
         self.writer_queue_sensor_arduino = Queue()
@@ -35,8 +36,9 @@ class SerialHandler(Thread):
                                   'wing_pos_port', 'wing_pos_sb',
                                   'yaw', 'roll', 'pitch', 'depth_beneath_rov',
                                   'vertical_acceleration','set_point_depth']
-        self.serial_message_received_handler = SerialMessageRecivedHandler(self.gui_command_queue, self.sensor_list,
-                                                                           self.VALID_SENSOR_LIST, self.reader_queue)
+        self.VALID_ALARM_LIST = ['water_leakage']
+        self.serial_message_received_handler = SerialMessageRecivedHandler(self.gui_command_queue, self.sensor_list, self.alarm_list,
+                                                                           self.VALID_SENSOR_LIST, self.VALID_ALARM_LIST, self.reader_queue)
         self.serial_message_received_handler.daemon = True
         self.serial_message_received_handler.start()
         self.handle_writer_queue = HandleWriterQueue(self.reader_queue, self.writer_queue, self.writer_queue_IMU,

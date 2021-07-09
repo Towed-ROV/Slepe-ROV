@@ -68,7 +68,9 @@ unsigned long previousMillis = 0;
 unsigned long previous_imu_update = 0;
 String inputString = "";
 bool stringComplete = false;
+
 bool reset_ardu = false;
+
 const float ALPHA_COMP_FILTER = 0.94;
 const float ALPHA_LP_FILTER = 0.05;
 float calibration_gyro_X = -0.49656;
@@ -228,6 +230,7 @@ void loop() {
 
     // reads sensor data
     // pullup on leakage detector. Normally high
+
     if (digitalRead(LEAKAGE_DETECTOR) == HIGH) {
       Serial.print(F("<water_leakage: "));
       Serial.print("True");
@@ -287,10 +290,6 @@ void loop() {
       Serial.println(F(">"));
       turnToSend = UPDATE_DEPTH;
       previousMillis = currentMillis;
-      sensor.read();
-      temp1 = sensor.temperature();
-      depth = sensor.depth() + depth_rov_offset;
-      pressure = sensor.pressure();
       // vertical_accel = getVerticalAcceleration(-pitch, roll, accel_x, accel_y, accel_z);
     }
     else if (turnToSend == UPDATE_ACCELERATION)

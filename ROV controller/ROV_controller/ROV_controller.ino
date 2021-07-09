@@ -57,7 +57,10 @@ double max_trim = 15;
 double set_point_depth = 0; //set point Depth/Sea floor
 double set_point_roll = 0; //set point TRIM
 
-
+const int pitch_readings_length = 50;
+double pitch_readings[pitch_readings_length];
+double pitch_compensation = 0;
+double minimum_change_pitch = 3;
 // Sensors
 double depth = 0, echo_distance, roll = 0, pitch = 0;
 // Controller outputs
@@ -115,8 +118,6 @@ void setup() {
 }
 
 
-
-
 void loop() {
 
 
@@ -133,6 +134,8 @@ void loop() {
       case AUTO_DEPTH_MODE:
 
         pid_depth.Compute();
+        Serial.print("wing angle: ");
+        Serial.println(wing_angle);
         pid_trim.Compute();
         if (trim_angle != 0) {
           trimWingPos();
@@ -182,6 +185,8 @@ void loop() {
   }
 
 }
+
+
 
 /**
    Moves the stepper motor on starboard side on step towards the desired position
@@ -243,7 +248,6 @@ void moveStepperPort(int desired_pos) {
 
 /**
   Set a new target mode
-  only manual and depth mode is included at this stage.
    @param The desired target mode.
 
 */
@@ -281,8 +285,8 @@ double mapf(double value, double minIn, double maxIn, double minOut, double maxO
 }
 
 void compensateWingToPitch() {
-  wing_angle_sb -= pitch;
-  wing_angle_port -= pitch;
+  wing_angle_sb -= pitch_compensation;
+  wing_angle_port -= pitch_compensation;
 }
 
 /**
@@ -306,6 +310,30 @@ void trimWingPos() {
   wing_angle_port = constrain(wing_angle_port, -max_wing_angle, max_wing_angle);
 }
 
+double get_average_array(double values[], int length_array) {
+  double summed_values = 0;
+  for (int i = 0; i < length_array; i++) {
+    summed_values += values[i];
+  }
+  double average_value = summed_values / length_array;
+  return average_value;
+}
+
+
+double shift_array_left(double array_to_edit[], int length_array, double new_val) {
+  for (int i = 1; i < length_array; i++) {
+    array_to_edit[i - 1] = array_to_edit[i];
+  }
+  array_to_edit[length_array - 1] = new_val;
+}
+
+void set_pitch_compensation() {
+  double average_pitch = get_average_array(pitch_readings, pitch_readings_length);
+  if (abs(average_pitch - pitch_compensation) >= minimum_change_pitch) {
+    pitch_compensation = average_pitch;
+  }
+}
+
 /**
   Updates the GUI with the actual wing positions.
 */
@@ -327,6 +355,7 @@ void updateWingPosGUI(double pos_sb, double pos_port) {
   }
   boolWingPos = !boolWingPos;
 }
+
 
 /**
   Split the incoming strings, part01 is the header/command while part02 is the value.
@@ -388,12 +417,16 @@ void translateString(String s) {
   }
 
   else if (part01.equals("roll")) {
+
     roll = part02.toInt();
 
   }
 
   else if (part01.equals("pitch")) {
-    pitch = part02.toInt();
+    double pitch = part02.toDouble();
+    depth = pitch;
+    shift_array_left(pitch_readings, pitch_readings_length, pitch);
+    set_pitch_compensation();
 
   }
   //SET POINTS
