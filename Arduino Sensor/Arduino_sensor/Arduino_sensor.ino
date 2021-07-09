@@ -69,6 +69,8 @@ unsigned long previous_imu_update = 0;
 String inputString = "";
 bool stringComplete = false;
 
+bool reset_ardu = false;
+
 const float ALPHA_COMP_FILTER = 0.94;
 const float ALPHA_LP_FILTER = 0.05;
 float calibration_gyro_X = -0.49656;
@@ -88,7 +90,6 @@ float accel_y = 0;
 float accel_z = 0;
 float vertical_accel = 0;
 
-SimpleKalmanFilter pressureKalmanFilter(0.08, 1000, 0.01);
 
 
 
@@ -155,7 +156,16 @@ void setup() {
 
   // Use built in Serial port to communicate with the Arduino IDE Serial Monitor
   Serial.begin(57600);
-  delay(1000);
+  while (!reset_ardu) {
+  Serial.println("<SensorArduino:0>");
+    String msg = Serial.readString();
+    String part01 = getValue(msg, ':', 0);
+
+    part01.replace("<","");
+if (part01 == "start"){
+      reset_ardu = true;
+    }
+  }
   Serial.println("<SensorArduino:0>");  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(D2, OUTPUT);
   pinMode(D3, OUTPUT);
@@ -164,9 +174,9 @@ void setup() {
   //  software_serial.begin(4800);
   // wait until communication with the Ping device is established
   // and the Ping device is successfully initialized
-  while (!ping.initialize()) {
-    Serial.println(F("echosounder did not initialize"));
-  }
+//  while (!ping.initialize()) {
+//    Serial.println(F("echosounder did not initialize"));
+//  }
   Wire.begin();
   Wire.setClock(10000);
   while (!sensor.init()) {
@@ -220,7 +230,8 @@ void loop() {
 
     // reads sensor data
     // pullup on leakage detector. Normally high
-    if (digitalRead(LEAKAGE_DETECTOR) == LOW) {
+
+    if (digitalRead(LEAKAGE_DETECTOR) == HIGH) {
       Serial.print(F("<water_leakage: "));
       Serial.print("True");
       Serial.println(F(">"));
@@ -290,7 +301,7 @@ void loop() {
       previousMillis = currentMillis;
       sensor.read();
       temp1 = sensor.temperature();
-      depth = pressureKalmanFilter.updateEstimate(sensor.depth()) + depth_rov_offset;
+      depth = sensor.depth() + depth_rov_offset;
       pressure = sensor.pressure();
 
 
